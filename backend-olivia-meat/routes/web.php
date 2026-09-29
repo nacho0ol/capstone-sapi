@@ -39,3 +39,16 @@ Route::get('/keuangan', [KeuanganController::class, 'index'])->name('keuangan.in
 // Rute Profil
 Route::get('/profil', [ProfilController::class, 'index'])->name('profil.index');
 Route::put('/profil/update', [ProfilController::class, 'update'])->name('profil.update');
+
+// Rute Kelola Data (Master Data: Produk & Pelanggan)
+Route::get('/master', [MasterDataController::class, 'index'])->name('master.index');
+
+// Rute CRUD Produk
+Route::post('/master/produk', [MasterDataController::class, 'storeProduk'])->name('master.produk.store');
+Route::put('/master/produk/{id}', [MasterDataController::class, 'updateProduk'])->name('master.produk.update');
+Route::delete('/master/produk/{id}', [MasterDataController::class, 'deleteProduk'])->name('master.produk.delete');
+
+// Rute CRUD Pelanggan
+Route::post('/master/pelanggan', [MasterDataController::class, 'storePelanggan'])->name('master.pelanggan.store');
+Route::put('/master/pelanggan/{id}', [MasterDataController::class, 'updatePelanggan'])->name('master.pelanggan.update');
+Route::delete('/master/pelanggan/{id}', [MasterDataController::class, 'deletePelanggan'])->name('master.pelanggan.delete');
