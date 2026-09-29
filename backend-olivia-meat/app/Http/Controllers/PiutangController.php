@@ -2,50 +2,82 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Piutang;
+use App\Models\Pesanan;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PiutangController extends Controller
 {
-    // Menampilkan daftar piutang (Belum Lunas / Sebagian)
-    public function index()
+    public function index(Request $request)
     {
-        $piutang = Piutang::where('is_deleted', 0)->orderBy('tgl_jatuh_tempo', 'asc')->get();
+        $query = Piutang::with('pesanan.pelanggan')->where('is_deleted', 0);
+        
+        if ($request->has('status')) {
+            $query->where('status_piutang', $request->status);
+        }
+
+        $piutang = $query->orderBy('tgl_jatuh_tempo', 'asc')->get();
+        
+        if ($request->wantsJson()) {
+            return response()->json($piutang);
+        }
+
         return view('piutang.index', compact('piutang'));
     }
 
-    // Memproses pembayaran piutang (Cicil atau Lunas)
-    public function updatePembayaran(Request $request, $id_pesanan)
+    public function show($id, Request $request)
+    {
+        $piutang = Piutang::with('pesanan.pelanggan')->where('is_deleted', 0)->findOrFail($id);
+        return response()->json($piutang);
+    }
+
+    public function bayar(Request $request, $id) // alias for api
+    {
+        return $this->updatePembayaran($request, $id);
+    }
+
+    public function updatePembayaran(Request $request, $id)
     {
         $request->validate([
-            'jumlah_bayar' => 'required|integer|min:1'
+            'nominal_bayar' => 'required|integer|min:1'
         ]);
 
-        $piutang = Piutang::where('id_pesanan', $id_pesanan)->firstOrFail();
+        DB::beginTransaction();
+        try {
+            $piutang = Piutang::where('is_deleted', 0)->findOrFail($id);
+            
+            $nominalBayar = $request->nominal_bayar;
+            $piutang->jumlah_terbayar += $nominalBayar;
 
-        // Hitung total terbayar yang baru
-        $terbayarBaru = $piutang->jumlah_terbayar + $request->jumlah_bayar;
+            if ($piutang->jumlah_terbayar >= $piutang->total_tagihan) {
+                $piutang->jumlah_terbayar = $piutang->total_tagihan; // prevent overpayment
+                $piutang->status_piutang = 'Lunas';
 
-        // Validasi agar tidak kelebihan bayar dari total tagihan
-        if ($terbayarBaru > $piutang->total_tagihan) {
-            return redirect()->back()->with('error', 'Jumlah pembayaran melebihi sisa tagihan!');
+                // Update pesanan status
+                $pesanan = Pesanan::find($piutang->id_pesanan);
+                if ($pesanan) {
+                    $pesanan->status_bayar = 'Lunas';
+                    $pesanan->save();
+                }
+            } else {
+                $piutang->status_piutang = 'Sebagian';
+            }
+
+            $piutang->save();
+
+            DB::commit();
+
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Pembayaran piutang berhasil dicatat', 'data' => $piutang]);
+            }
+            return redirect()->back()->with('success', 'Pembayaran berhasil dicatat.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Gagal mencatat pembayaran piutang', 'error' => $e->getMessage()], 500);
+            }
+            return redirect()->back()->with('error', 'Gagal mencatat pembayaran: ' . $e->getMessage());
         }
-
-        // Tentukan status piutang otomatis
-        if ($terbayarBaru == $piutang->total_tagihan) {
-            $status = 'Lunas';
-        } elseif ($terbayarBaru > 0) {
-            $status = 'Sebagian';
-        } else {
-            $status = 'Belum Lunas';
-        }
-
-        // Update data piutang
-        $piutang->update([
-            'jumlah_terbayar' => $terbayarBaru,
-            'status_piutang' => $status
-        ]);
-
-        return redirect()->back()->with('success', 'Pembayaran piutang berhasil diperbarui!');
     }
 }

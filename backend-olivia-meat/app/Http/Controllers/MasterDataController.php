@@ -49,7 +49,10 @@ class MasterDataController extends Controller
     public function storePelanggan(Request $request)
     {
         $this->validasiPelanggan($request);
-        Pelanggan::create(array_merge($request->all(), ['is_deleted' => 0]));
+        $pelanggan = Pelanggan::create(array_merge($request->all(), ['is_deleted' => 0]));
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Pelanggan berhasil disimpan', 'data' => $pelanggan], 201);
+        }
         return redirect()->route('master.index', ['tab' => 'pelanggan'])->with('success', 'Pelanggan baru berhasil disimpan!');
     }
 

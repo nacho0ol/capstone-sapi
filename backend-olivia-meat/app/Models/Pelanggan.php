@@ -2,18 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Pelanggan extends Model
 {
-    protected $table = 'pelanggan';
+    use HasFactory;
+
+    protected $table = 'pelanggans';
     protected $primaryKey = 'id_pelanggan';
-    public $timestamps = false;
 
     protected $fillable = [
-        'nama_pelanggan', 
-        'no_telp', 
-        'alamat', 
+        'nama_pelanggan',
+        'no_telp',
+        'alamat',
         'is_deleted'
     ];
 }

@@ -12,6 +12,9 @@ Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 // Rute Transaksi Pesanan (Create & Read)
 Route::get('/transaksi', [PesananController::class, 'index'])->name('transaksi.index');
 Route::post('/transaksi/store', [PesananController::class, 'store'])->name('transaksi.store');
+Route::get('/transaksi/{id}/edit', [PesananController::class, 'edit'])->name('transaksi.edit');
+Route::put('/transaksi/{id}', [PesananController::class, 'update'])->name('transaksi.update');
+Route::post('/transaksi/cancel/{id}', [PesananController::class, 'cancel'])->name('transaksi.cancel');
 
 // Rute Piutang & Update Pembayaran Cicilan
 Route::get('/piutang', [PiutangController::class, 'index'])->name('piutang.index');

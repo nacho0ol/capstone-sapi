@@ -7,9 +7,14 @@ use App\Models\PengeluaranHarian;
 
 class PengeluaranController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $pengeluaran = PengeluaranHarian::where('is_deleted', 0)->orderBy('tgl_pengeluaran', 'desc')->get();
+        $pengeluaran = PengeluaranHarian::orderBy('tgl_pengeluaran', 'desc')->get();
+        
+        if ($request->wantsJson()) {
+            return response()->json($pengeluaran);
+        }
+
         return view('pengeluaran.index', compact('pengeluaran'));
     }
 
@@ -22,14 +27,17 @@ class PengeluaranController extends Controller
             'keterangan' => 'required|string|min:5'
         ]);
 
-        PengeluaranHarian::create([
+        $pengeluaran = PengeluaranHarian::create([
             'tgl_pengeluaran' => $request->tgl_pengeluaran,
             'kategori_pengeluaran' => $request->kategori_pengeluaran,
             'id_user' => 1, // Hardcode ID Admin sementara
             'nominal' => $request->nominal,
-            'keterangan' => $request->keterangan,
-            'is_deleted' => 0
+            'keterangan' => $request->keterangan
         ]);
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Pengeluaran berhasil dicatat', 'data' => $pengeluaran], 201);
+        }
 
         return redirect()->back()->with('success', 'Catatan pengeluaran harian berhasil ditambahkan!');
     }

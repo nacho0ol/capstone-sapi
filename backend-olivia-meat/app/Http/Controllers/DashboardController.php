@@ -5,26 +5,38 @@ namespace App\Http\Controllers;
 use App\Models\Pesanan;
 use App\Models\PengeluaranHarian;
 use App\Models\Piutang;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // 1. Total Pemasukan dari Pesanan yang berstatus Lunas / sudah dibayar
-        $totalPemasukan = Pesanan::where('is_dibatalkan', 0)
-            ->where('status_bayar', 'Lunas')
-            ->join('pesanan_detail', 'pesanan.id_pesanan', '=', 'pesanan_detail.id_pesanan')
-            ->sum(\DB::raw('pesanan_detail.qty * pesanan_detail.harga_jual_saat_ini'));
+        // Pemasukan dari Pesanan Lunas
+        $pemasukanLangsung = Pesanan::where('status_bayar', 'Lunas')
+                            ->where('metode_bayar', '!=', 'Tempo')
+                            ->where('is_deleted', 0)
+                            ->with('detail')
+                            ->get()
+                            ->sum(function ($pesanan) {
+                                return $pesanan->detail->sum('subtotal');
+                            });
 
-        // 2. Total Pengeluaran Harian
-        $totalPengeluaran = PengeluaranHarian::where('is_deleted', 0)->sum('nominal');
+        // Pemasukan dari cicilan piutang
+        $pemasukanPiutang = Piutang::where('is_deleted', 0)
+                            ->sum('jumlah_terbayar');
+        
+        $totalPemasukan = $pemasukanLangsung + $pemasukanPiutang;
 
-        // 3. Hitung Laba Bersih Sederhana (Pemasukan - Pengeluaran)
+        // Pengeluaran Harian
+        $totalPengeluaran = PengeluaranHarian::sum('nominal');
+
         $labaRugi = $totalPemasukan - $totalPengeluaran;
 
-        // 4. Hitung Piutang Belum Lunas
-        $totalPiutang = Piutang::where('is_deleted', 0)->where('status_piutang', '!=', 'Lunas')->sum(\DB::raw('total_tagihan - jumlah_terbayar'));
+        $totalPiutang = Piutang::whereIn('status_piutang', ['Belum Lunas', 'Sebagian'])
+                        ->where('is_deleted', 0)
+                        ->sum(DB::raw('total_tagihan - jumlah_terbayar'));
 
-        return view('dashboard', compact('totalPemasukan', 'totalPengeluaran', 'labaRugi', 'totalPiutang'));
+        return view('dashboard', compact('labaRugi', 'totalPemasukan', 'totalPengeluaran', 'totalPiutang'));
     }
 }

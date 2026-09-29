@@ -42,6 +42,11 @@
             @endforeach
         </div>
     @elseif($tab == 'piutang')
+        <div class="mb-3">
+            <a href="{{ route('piutang.index') }}" class="block w-full bg-blue-50 text-blue-600 border border-blue-200 text-center py-2 rounded shadow-sm text-xs font-bold hover:bg-blue-100">
+                Kelola & Bayar Piutang &rarr;
+            </a>
+        </div>
         <div class="space-y-2">
             @foreach($piutang as $pi)
                 <div class="bg-white border rounded p-2.5 text-xs shadow-sm flex justify-between items-center">

@@ -14,18 +14,18 @@ class KeuanganController extends Controller
         $tab = $request->get('tab', 'labarugi');
 
         // Data Laba Rugi
-        $totalPemasukan = Pesanan::where('is_dibatalkan', 0)
-            ->where('status_bayar', 'Lunas')
-            ->join('pesanan_detail', 'pesanan.id_pesanan', '=', 'pesanan_detail.id_pesanan')
-            ->sum(\DB::raw('pesanan_detail.qty * pesanan_detail.harga_jual_saat_ini'));
+        $totalPemasukan = Pesanan::where('pesanans.is_deleted', 0)
+            ->where('pesanans.status_bayar', 'Lunas')
+            ->join('pesanan_details', 'pesanans.id_pesanan', '=', 'pesanan_details.id_pesanan')
+            ->sum(\DB::raw('pesanan_details.subtotal'));
 
-        $totalPengeluaran = PengeluaranHarian::where('is_deleted', 0)->sum('nominal');
+        $totalPengeluaran = PengeluaranHarian::sum('nominal'); // No is_deleted on pengeluaran_harian
         $labaRugi = $totalPemasukan - $totalPengeluaran;
 
         // Data Riwayat Transaksi & Piutang & Pengeluaran
-        $pesanan = Pesanan::where('is_dibatalkan', 0)->orderBy('tgl_order', 'desc')->get();
+        $pesanan = Pesanan::where('is_deleted', 0)->orderBy('tgl_order', 'desc')->get();
         $piutang = Piutang::where('is_deleted', 0)->get();
-        $pengeluaran = PengeluaranHarian::where('is_deleted', 0)->get();
+        $pengeluaran = PengeluaranHarian::orderBy('tgl_pengeluaran', 'desc')->get(); // No is_deleted
 
         return view('keuangan.index', compact('tab', 'totalPemasukan', 'totalPengeluaran', 'labaRugi', 'pesanan', 'piutang', 'pengeluaran'));
     }
