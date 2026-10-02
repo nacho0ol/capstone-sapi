@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -16,8 +17,12 @@ return new class extends Migration
             $table->string('nama', 50);
             $table->string('username', 20)->unique();
             $table->string('password', 255);
+            $table->boolean('is_deleted')->default(0); // Kolom tambahan dari SQL-mu
             $table->timestamps();
         });
+
+        DB::statement("ALTER TABLE users ADD CONSTRAINT chk_nama CHECK (LENGTH(nama) >= 3 AND nama REGEXP '^[a-zA-Z][a-zA-Z ]*$')");
+        DB::statement("ALTER TABLE users ADD CONSTRAINT chk_username CHECK (username REGEXP '^[a-zA-Z_]+$')");
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

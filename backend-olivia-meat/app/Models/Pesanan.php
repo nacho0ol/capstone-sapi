@@ -23,6 +23,7 @@ class Pesanan extends Model
         'status_bayar',
         'tgl_antar',
         'status_pemesanan',
+        'catatan',
         'is_deleted'
     ];
 
