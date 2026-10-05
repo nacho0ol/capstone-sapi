@@ -17,7 +17,7 @@ class PesananDetail extends Model
         'id_produk',
         'qty',
         'harga_jual_saat_ini',
-        'subtotal',
+        //'subtotal',
         'is_deleted'
     ];
 

@@ -68,16 +68,16 @@ class PesananController extends Controller
             $status_bayar = ($request->metode_bayar == 'Tempo') ? 'Unpaid' : 'Lunas';
 
             $pesanan = Pesanan::create([
-                'id_pesanan' => $id_pesanan,
-                'id_pelanggan' => $request->id_pelanggan,
-                'id_user' => $request->id_user,
-                'tgl_order' => $request->tgl_order,
-                'metode_bayar' => $request->metode_bayar,
-                'status_bayar' => $status_bayar,
-                'tgl_antar' => $request->tgl_antar,
-                'status_pemesanan' => 'diterima',
-                'is_deleted' => 0
-            ]);
+    'id_pesanan' => $id_pesanan,
+    'id_pelanggan' => $request->id_pelanggan,
+    'id_user' => $request->id_user,
+    'tgl_order' => $request->tgl_order,
+    'metode_bayar' => $request->metode_bayar,
+    'status_bayar' => $status_bayar,
+    'tgl_antar' => $request->tgl_antar,
+    'status_pemesanan' => 'Diterima', 
+    'is_deleted' => 0
+]);
 
             $total_tagihan = 0;
 
@@ -91,7 +91,7 @@ class PesananController extends Controller
                     'id_produk' => $item['id_produk'],
                     'qty' => $item['qty'],
                     'harga_jual_saat_ini' => $produk->harga_jual,
-                    'subtotal' => $subtotal,
+                    //'subtotal' => $subtotal,
                     'is_deleted' => 0
                 ]);
             }
@@ -173,7 +173,7 @@ class PesananController extends Controller
                     'id_produk' => $item['id_produk'],
                     'qty' => $item['qty'],
                     'harga_jual_saat_ini' => $produk->harga_jual,
-                    'subtotal' => $subtotal,
+                    //'subtotal' => $subtotal,
                     'is_deleted' => 0
                 ]);
             }
@@ -216,7 +216,7 @@ class PesananController extends Controller
         
         DB::beginTransaction();
         try {
-            $pesanan->status_pemesanan = 'ditolak'; // as cancel
+            $pesanan->status_pemesanan = 'Ditolak'; // as cancel
             $pesanan->save();
 
             if ($pesanan->metode_bayar == 'Tempo') {

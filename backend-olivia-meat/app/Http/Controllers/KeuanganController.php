@@ -23,7 +23,7 @@ class KeuanganController extends Controller
         $labaRugi = $totalPemasukan - $totalPengeluaran;
 
         // Data Riwayat Transaksi & Piutang & Pengeluaran
-        $pesanan = Pesanan::where('is_deleted', 0)->orderBy('tgl_order', 'desc')->get();
+        $pesanan = Pesanan::with(['pelanggan', 'detail.produk'])->where('is_deleted', 0)->orderBy('tgl_order', 'desc')->get();
         $piutang = Piutang::where('is_deleted', 0)->get();
         $pengeluaran = PengeluaranHarian::orderBy('tgl_pengeluaran', 'desc')->get(); // No is_deleted
 

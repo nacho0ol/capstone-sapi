@@ -10,7 +10,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('piutangs', function (Blueprint $table) {
-            // Di SQL, PK-nya adalah id_pesanan (bukan id_piutang baru)
             $table->string('id_pesanan', 20)->primary();
             $table->foreign('id_pesanan')->references('id_pesanan')->on('pesanans');
             $table->date('tgl_jatuh_tempo');
