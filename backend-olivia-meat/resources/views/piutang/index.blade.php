@@ -10,7 +10,7 @@
             <button @click="showForm = false" class="absolute top-3 right-3 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
             <h3 class="font-bold text-gray-800 mb-4 text-base border-b pb-2">Bayar Cicilan Piutang</h3>
             
-            <form :action="'{{ route('piutang.index') }}/bayar/' + selectedId" method="POST" class="space-y-3">
+            <form :action="'{{ url('/piutang/bayar') }}/' + selectedId" method="POST" class="space-y-3">
                 @csrf
                 <p class="text-sm text-gray-600">Sisa Tagihan: Rp <span x-text="sisaTagihan.toLocaleString('id-ID')"></span></p>
 
@@ -49,8 +49,8 @@
                         <p>Terbayar: Rp {{ number_format($p->jumlah_terbayar, 0, ',', '.') }}</p>
                     </div>
                     @if($p->status_piutang != 'Lunas')
-                    <button @click="selectedId = {{ $p->id_piutang }}; maxBayar = {{ $p->total_tagihan - $p->jumlah_terbayar }}; sisaTagihan = maxBayar; showForm = true;" class="bg-green-600 text-white px-3 py-1.5 rounded font-bold hover:bg-green-700 shadow">
-                        Bayar
+                    <button @click="selectedId = '{{ $p->id_pesanan }}'; maxBayar = {{ $p->total_tagihan - $p->jumlah_terbayar }}; sisaTagihan = maxBayar; showForm = true;" class="bg-green-600 text-white px-3 py-1.5 rounded font-bold hover:bg-green-700 shadow">
+                    Bayar
                     </button>
                     @endif
                 </div>

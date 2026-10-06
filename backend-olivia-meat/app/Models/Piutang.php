@@ -10,7 +10,10 @@ class Piutang extends Model
     use HasFactory;
 
     protected $table = 'piutangs';
-    protected $primaryKey = 'id_piutang';
+    
+    protected $primaryKey = 'id_pesanan';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'id_pesanan',

@@ -12,7 +12,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 // Pengeluaran Harian
-Route::apiResource('pengeluaran', PengeluaranHarianController::class);
+//Route::apiResource('pengeluaran', PengeluaranHarianController::class);
 
 // Pesanan
 Route::apiResource('pesanan', PesananController::class)->except(['update', 'destroy']);

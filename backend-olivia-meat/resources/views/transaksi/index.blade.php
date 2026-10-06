@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div x-data="{ showForm: false, selectedPelanggan: '', showPelangganForm: false, items: [{id_produk: '', qty: 1}], produks: {{ Js::from($produks) }}, pelanggans: {{ Js::from($pelanggans) }}, newPelanggan: {nama_pelanggan: '', no_telp: '', alamat: ''} }">
+<div x-data="{ showForm: false, selectedPelanggan: '', showPelangganForm: false, metodeBayar: '{{ old('metode_bayar', 'Tunai') }}', items: [{id_produk: '', qty: 1}], produks: {{ Js::from($produks) }}, pelanggans: {{ Js::from($pelanggans) }}, newPelanggan: {nama_pelanggan: '', no_telp: '', alamat: ''} }">
     <div class="flex justify-between items-center mb-4">
         <h2 class="font-bold text-gray-700 text-lg">Daftar Pesanan</h2>
         <button @click="showForm = true" class="bg-red-600 text-white px-3 py-1.5 rounded text-xs font-bold shadow hover:bg-red-700">+ Tambah</button>
@@ -18,7 +18,6 @@
         </div>
     @endif
 
-    <!-- Modal Form Tambah Pesanan -->
     <div x-show="showForm" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4" style="display: none;" x-cloak>
         <div class="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto p-4 shadow-xl relative">
             <button @click="showForm = false" class="absolute top-3 right-3 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
@@ -55,7 +54,6 @@
                     <select name="id_pelanggan" x-model="selectedPelanggan" @change="if(selectedPelanggan === 'new') { showPelangganForm = true; selectedPelanggan = ''; }" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:border-red-500" required>
                         <option value="">-- Pilih Pelanggan --</option>
                         <template x-for="plg in pelanggans" :key="plg.id_pelanggan">
-                            <!-- PERBAIKAN UNDEFINED: Pakai no_telp -->
                             <option :value="plg.id_pelanggan" x-text="plg.nama_pelanggan + ' - ' + plg.no_telp"></option>
                         </template>
                         <option value="new" class="font-bold text-red-600">+ Tambah Pelanggan Baru</option>
@@ -64,11 +62,25 @@
 
                 <div>
                     <label class="block text-xs text-gray-500 font-semibold mb-1">Metode Bayar</label>
-                    <select name="metode_bayar" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:border-red-500" required>
-                        <option value="Tunai" {{ old('metode_bayar') == 'Tunai' ? 'selected' : '' }}>Tunai</option>
-                        <option value="Transfer" {{ old('metode_bayar') == 'Transfer' ? 'selected' : '' }}>Transfer</option>
-                        <option value="Tempo" {{ old('metode_bayar') == 'Tempo' ? 'selected' : '' }}>Tempo (Piutang)</option>
+                    <select name="metode_bayar" x-model="metodeBayar" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:border-red-500" required>
+                        <option value="Tunai">Tunai</option>
+                        <option value="Transfer">Transfer</option>
+                        <option value="Tempo">Tempo (Piutang)</option>
                     </select>
+                </div>
+
+                <div x-show="metodeBayar === 'Tempo'" class="bg-blue-50 border border-blue-200 p-3 rounded" style="display: none;" x-transition>
+                    <h4 class="text-[11px] font-bold text-blue-800 uppercase mb-2">Data Piutang & DP</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] text-blue-700 font-semibold mb-1">Tanggal Jatuh Tempo</label>
+                            <input type="date" name="tgl_jatuh_tempo" value="{{ old('tgl_jatuh_tempo', date('Y-m-d', strtotime('+7 days'))) }}" class="w-full border border-blue-300 rounded p-2 text-sm focus:outline-none focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-blue-700 font-semibold mb-1">DP / Dibayar Awal (Rp)</label>
+                            <input type="number" name="jumlah_terbayar" value="{{ old('jumlah_terbayar', 0) }}" min="0" class="w-full border border-blue-300 rounded p-2 text-sm focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
                 </div>
 
                 <div>
@@ -174,7 +186,7 @@
                     </div>
                 </a>
                 <div class="text-right flex flex-col items-end justify-between h-full space-y-2 ml-2 border-l pl-2 min-w-[70px]">
-                    <span class="text-[10px] font-bold px-2 py-1 rounded w-full text-center {{ $p->status_bayar == 'Lunas' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
+                    <span class="text-[10px] font-bold px-2 py-1 rounded w-full text-center {{ $p->status_bayar == 'Lunas' ? 'bg-green-100 text-green-700' : ($p->status_bayar == 'DP' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700') }}">
                         {{ $p->status_bayar }}
                     </span>
                     <form action="{{ route('transaksi.cancel', $p->id_pesanan) }}" method="POST" onsubmit="return confirm('Batalkan pesanan ini?');">

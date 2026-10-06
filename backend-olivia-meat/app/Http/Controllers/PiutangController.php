@@ -28,7 +28,7 @@ class PiutangController extends Controller
 
     public function show($id, Request $request)
     {
-        $piutang = Piutang::with('pesanan.pelanggan')->where('is_deleted', 0)->findOrFail($id);
+        $piutang = Piutang::with('pesanan.pelanggan')->where('is_deleted', 0)->where('id_pesanan', $id)->firstOrFail();
         return response()->json($piutang);
     }
 
@@ -45,33 +45,37 @@ class PiutangController extends Controller
 
         DB::beginTransaction();
         try {
-            $piutang = Piutang::where('is_deleted', 0)->findOrFail($id);
+            $piutang = Piutang::where('is_deleted', 0)->where('id_pesanan', $id)->firstOrFail();
+            $pesanan = Pesanan::find($piutang->id_pesanan); // Tarik data pesanan terkait
             
             $nominalBayar = $request->nominal_bayar;
             $piutang->jumlah_terbayar += $nominalBayar;
 
             if ($piutang->jumlah_terbayar >= $piutang->total_tagihan) {
-                $piutang->jumlah_terbayar = $piutang->total_tagihan; // prevent overpayment
+                $piutang->jumlah_terbayar = $piutang->total_tagihan; 
                 $piutang->status_piutang = 'Lunas';
 
-                // Update pesanan status
-                $pesanan = Pesanan::find($piutang->id_pesanan);
                 if ($pesanan) {
                     $pesanan->status_bayar = 'Lunas';
                     $pesanan->save();
                 }
             } else {
                 $piutang->status_piutang = 'Sebagian';
+                
+               
+                if ($pesanan) {
+                    $pesanan->status_bayar = 'DP'; 
+                    $pesanan->save();
+                }
             }
 
             $piutang->save();
-
             DB::commit();
 
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'Pembayaran piutang berhasil dicatat', 'data' => $piutang]);
             }
-            return redirect()->back()->with('success', 'Pembayaran berhasil dicatat.');
+            return redirect()->back()->with('success', 'Pembayaran cicilan berhasil dicatat!');
         } catch (\Exception $e) {
             DB::rollBack();
             if ($request->wantsJson()) {

@@ -38,16 +38,21 @@
             </div>
 
             <div>
-                <label class="block text-xs text-gray-500 font-semibold mb-1">Metode Bayar</label>
-                <select name="metode_bayar" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:border-red-500" required>
-                    <option value="Tunai" {{ $pesanan->metode_bayar == 'Tunai' ? 'selected' : '' }}>Tunai</option>
-                    <option value="Transfer" {{ $pesanan->metode_bayar == 'Transfer' ? 'selected' : '' }}>Transfer</option>
-                    <option value="Tempo" {{ $pesanan->metode_bayar == 'Tempo' ? 'selected' : '' }}>Tempo (Piutang)</option>
-                </select>
-                @if($pesanan->metode_bayar == 'Tempo')
-                <p class="text-[10px] text-yellow-600 mt-1">*Ubah ke metode Tunai/Transfer akan menghapus riwayat tagihan piutang pesanan ini.</p>
-                @endif
-            </div>
+        <label class="block text-xs text-gray-500 font-semibold mb-1">Metode Bayar</label>
+        <select name="metode_bayar" class="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:border-red-500" required>
+            <option value="Tunai" {{ $pesanan->metode_bayar == 'Tunai' ? 'selected' : '' }}>Tunai</option>
+            <option value="Transfer" {{ $pesanan->metode_bayar == 'Transfer' ? 'selected' : '' }}>Transfer</option>
+            <option value="Tempo" {{ $pesanan->metode_bayar == 'Tempo' ? 'selected' : '' }}>Tempo (Piutang)</option>
+    </select>
+    
+    @if($pesanan->metode_bayar == 'Tempo' && $pesanan->piutang)
+        <div class="mt-2 p-2.5 bg-yellow-50 border border-yellow-200 rounded text-[11px] text-yellow-800">
+            <strong>Status Piutang:</strong> {{ $pesanan->piutang->status_piutang }} <br>
+            <strong>Telah Dibayar:</strong> Rp {{ number_format($pesanan->piutang->jumlah_terbayar, 0, ',', '.') }} <br>
+            <strong>Sisa Kurangan:</strong> Rp {{ number_format($pesanan->piutang->total_tagihan - $pesanan->piutang->jumlah_terbayar, 0, ',', '.') }}
+        </div>
+    @endif
+</div>
 
             <div class="border-t pt-3 mt-3">
                 <label class="block text-xs text-gray-500 font-semibold mb-2">Item Produk</label>

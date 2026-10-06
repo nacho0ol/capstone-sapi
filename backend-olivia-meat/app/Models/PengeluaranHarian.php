@@ -17,7 +17,8 @@ class PengeluaranHarian extends Model
         'kategori_pengeluaran',
         'id_user',
         'nominal',
-        'keterangan'
+        'keterangan',
+        'is_deleted'
     ];
 
     public function user()

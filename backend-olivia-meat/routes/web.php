@@ -23,7 +23,8 @@ Route::post('/piutang/bayar/{id}', [PiutangController::class, 'updatePembayaran'
 // Rute Pengeluaran Harian
 Route::get('/pengeluaran', [PengeluaranController::class, 'index'])->name('pengeluaran.index');
 Route::post('/pengeluaran/store', [PengeluaranController::class, 'store'])->name('pengeluaran.store');
-
+Route::put('/pengeluaran/{id}', [PengeluaranController::class, 'update'])->name('pengeluaran.update');
+Route::delete('/pengeluaran/{id}', [PengeluaranController::class, 'destroy'])->name('pengeluaran.destroy');
 use App\Http\Controllers\MasterDataController;
 
 // Rute Kelola Data (Master Data: Produk & Pelanggan)

@@ -56,28 +56,33 @@ class PesananController extends Controller
             'items'        => 'required|array|min:1',
             'items.*.id_produk' => 'required|exists:produks,id_produk',
             'items.*.qty'  => 'required|numeric|min:0.01',
+            'tgl_jatuh_tempo' => 'required_if:metode_bayar,Tempo|date',
+            'jumlah_terbayar' => 'nullable|numeric|min:0',
         ]);
 
         DB::beginTransaction();
         try {
-            // Generate ID
             $datePrefix = date('Ymd', strtotime($request->tgl_order));
             $count = Pesanan::whereDate('tgl_order', $request->tgl_order)->count() + 1;
             $id_pesanan = 'ORD-' . $datePrefix . '-' . str_pad($count, 2, '0', STR_PAD_LEFT);
 
-            $status_bayar = ($request->metode_bayar == 'Tempo') ? 'Unpaid' : 'Lunas';
+            $status_bayar = 'Lunas';
+            if ($request->metode_bayar == 'Tempo') {
+                $dp = $request->jumlah_terbayar ?? 0;
+                $status_bayar = ($dp > 0) ? 'DP' : 'Unpaid';
+            }
 
             $pesanan = Pesanan::create([
-    'id_pesanan' => $id_pesanan,
-    'id_pelanggan' => $request->id_pelanggan,
-    'id_user' => $request->id_user,
-    'tgl_order' => $request->tgl_order,
-    'metode_bayar' => $request->metode_bayar,
-    'status_bayar' => $status_bayar,
-    'tgl_antar' => $request->tgl_antar,
-    'status_pemesanan' => 'Diterima', 
-    'is_deleted' => 0
-]);
+                'id_pesanan' => $id_pesanan,
+                'id_pelanggan' => $request->id_pelanggan,
+                'id_user' => $request->id_user,
+                'tgl_order' => $request->tgl_order,
+                'metode_bayar' => $request->metode_bayar,
+                'status_bayar' => $status_bayar,
+                'tgl_antar' => $request->tgl_antar,
+                'status_pemesanan' => 'Diterima', 
+                'is_deleted' => 0
+            ]);
 
             $total_tagihan = 0;
 
@@ -91,18 +96,29 @@ class PesananController extends Controller
                     'id_produk' => $item['id_produk'],
                     'qty' => $item['qty'],
                     'harga_jual_saat_ini' => $produk->harga_jual,
-                    //'subtotal' => $subtotal,
                     'is_deleted' => 0
                 ]);
             }
 
+            // Simpan Piutang Jika Tempo
             if ($request->metode_bayar == 'Tempo') {
+                $dp = $request->jumlah_terbayar ?? 0;
+                
+                // Menentukan status_piutang otomatis
+                $status_piutang = 'Belum Lunas';
+                if ($dp > 0 && $dp < $total_tagihan) {
+                    $status_piutang = 'Sebagian';
+                } elseif ($dp >= $total_tagihan) {
+                    $status_piutang = 'Lunas';
+                    $pesanan->update(['status_bayar' => 'Lunas']); // Jika DP full, langsung lunas
+                }
+
                 Piutang::create([
                     'id_pesanan' => $id_pesanan,
-                    'tgl_jatuh_tempo' => date('Y-m-d', strtotime($request->tgl_order . ' + 7 days')), // Default 7 days
+                    'tgl_jatuh_tempo' => $request->tgl_jatuh_tempo,
                     'total_tagihan' => $total_tagihan,
-                    'jumlah_terbayar' => 0,
-                    'status_piutang' => 'Belum Lunas',
+                    'jumlah_terbayar' => $dp,
+                    'status_piutang' => $status_piutang,
                     'is_deleted' => 0
                 ]);
             }
@@ -125,7 +141,7 @@ class PesananController extends Controller
 
     public function edit($id)
     {
-        $pesanan = Pesanan::with(['detail.produk'])->where('is_deleted', 0)->findOrFail($id);
+        $pesanan = Pesanan::with(['detail.produk', 'piutang'])->where('is_deleted', 0)->findOrFail($id);
         $pelanggans = \App\Models\Pelanggan::orderBy('nama_pelanggan')->get();
         $produks = \App\Models\Produk::orderBy('nama_produk')->get();
         
@@ -142,13 +158,19 @@ class PesananController extends Controller
             'items'        => 'required|array|min:1',
             'items.*.id_produk' => 'required|exists:produks,id_produk',
             'items.*.qty'  => 'required|numeric|min:0.01',
+            'tgl_jatuh_tempo' => 'required_if:metode_bayar,Tempo|date',
+            'jumlah_terbayar' => 'nullable|numeric|min:0',
         ]);
 
         $pesanan = Pesanan::where('is_deleted', 0)->findOrFail($id);
 
         DB::beginTransaction();
         try {
-            $status_bayar = ($request->metode_bayar == 'Tempo') ? 'Unpaid' : 'Lunas';
+            $status_bayar = 'Lunas';
+            if ($request->metode_bayar == 'Tempo') {
+                $dp = $request->jumlah_terbayar ?? 0;
+                $status_bayar = ($dp > 0) ? 'DP' : 'Unpaid';
+            }
 
             $pesanan->update([
                 'id_pelanggan' => $request->id_pelanggan,
@@ -158,11 +180,9 @@ class PesananController extends Controller
                 'tgl_antar' => $request->tgl_antar,
             ]);
 
-            // Hapus detail lama
             PesananDetail::where('id_pesanan', $pesanan->id_pesanan)->delete();
 
             $total_tagihan = 0;
-            // Masukkan detail baru
             foreach ($request->items as $item) {
                 $produk = Produk::findOrFail($item['id_produk']);
                 $subtotal = $item['qty'] * $produk->harga_jual;
@@ -173,32 +193,44 @@ class PesananController extends Controller
                     'id_produk' => $item['id_produk'],
                     'qty' => $item['qty'],
                     'harga_jual_saat_ini' => $produk->harga_jual,
-                    //'subtotal' => $subtotal,
                     'is_deleted' => 0
                 ]);
             }
 
-            // Update Piutang
             $piutang = Piutang::where('id_pesanan', $pesanan->id_pesanan)->first();
+            
             if ($request->metode_bayar == 'Tempo') {
+                $dp = $request->jumlah_terbayar ?? 0;
+                
+                $status_piutang = 'Belum Lunas';
+                if ($dp > 0 && $dp < $total_tagihan) {
+                    $status_piutang = 'Sebagian';
+                } elseif ($dp >= $total_tagihan) {
+                    $status_piutang = 'Lunas';
+                    $pesanan->update(['status_bayar' => 'Lunas']);
+                }
+
                 if ($piutang) {
                     $piutang->update([
+                        'tgl_jatuh_tempo' => $request->tgl_jatuh_tempo,
                         'total_tagihan' => $total_tagihan,
+                        'jumlah_terbayar' => $dp,
+                        'status_piutang' => $status_piutang,
                         'is_deleted' => 0
                     ]);
                 } else {
                     Piutang::create([
                         'id_pesanan' => $pesanan->id_pesanan,
-                        'tgl_jatuh_tempo' => date('Y-m-d', strtotime($request->tgl_order . ' + 7 days')),
+                        'tgl_jatuh_tempo' => $request->tgl_jatuh_tempo,
                         'total_tagihan' => $total_tagihan,
-                        'jumlah_terbayar' => 0,
-                        'status_piutang' => 'Belum Lunas',
+                        'jumlah_terbayar' => $dp,
+                        'status_piutang' => $status_piutang,
                         'is_deleted' => 0
                     ]);
                 }
             } else {
                 if ($piutang) {
-                    $piutang->update(['is_deleted' => 1]); // Hapus piutang jika diubah jadi Tunai/Transfer
+                    $piutang->update(['is_deleted' => 1]); 
                 }
             }
 
@@ -216,7 +248,7 @@ class PesananController extends Controller
         
         DB::beginTransaction();
         try {
-            $pesanan->status_pemesanan = 'Ditolak'; // as cancel
+            $pesanan->status_pemesanan = 'Ditolak'; 
             $pesanan->save();
 
             if ($pesanan->metode_bayar == 'Tempo') {

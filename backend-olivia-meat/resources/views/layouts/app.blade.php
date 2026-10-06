@@ -38,7 +38,7 @@
         <div x-show="openAddMenu" @click.away="openAddMenu = false" class="absolute bottom-20 left-1/2 transform -translate-x-1/2 w-11/12 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-50 space-y-2" x-transition>
             <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 text-center">Pilih Menu Tambah Data</p>
             <a href="{{ route('transaksi.index') }}" class="block bg-red-50 text-red-700 hover:bg-red-100 text-xs font-semibold p-2.5 rounded-lg text-center">➕ Tambah Pesanan Baru</a>
-            <a href="{{ route('pengeluaran.index') }}" class="block bg-orange-50 text-orange-700 hover:bg-orange-100 text-xs font-semibold p-2.5 rounded-lg text-center">📉 Tambah Pengeluaran Harian</a>
+            <a href="{{ url('/pengeluaran') }}" class="block bg-orange-50 text-orange-700 hover:bg-orange-100 text-xs font-semibold p-2.5 rounded-lg text-center">📉 Tambah Pengeluaran Harian</a>
             <a href="{{ route('master.index', ['tab' => 'produk']) }}" class="block bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-semibold p-2.5 rounded-lg text-center">🥩 Tambah Produk Baru</a>
             <a href="{{ route('master.index', ['tab' => 'pelanggan']) }}" class="block bg-green-50 text-green-700 hover:bg-green-100 text-xs font-semibold p-2.5 rounded-lg text-center">👤 Tambah Pelanggan Baru</a>
         </div>
