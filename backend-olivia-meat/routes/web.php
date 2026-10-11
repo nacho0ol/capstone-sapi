@@ -40,6 +40,8 @@ use App\Http\Controllers\ProfilController;
 // Rute Keuangan
 Route::get('/keuangan', [KeuanganController::class, 'index'])->name('keuangan.index');
 
+Route::post('/pengaturan/notifikasi', [KeuanganController::class, 'updateNotifikasi'])->name('pengaturan.notifikasi');
+
 // Rute Profil
 Route::get('/profil', [ProfilController::class, 'index'])->name('profil.index');
 Route::put('/profil/update', [ProfilController::class, 'update'])->name('profil.update');

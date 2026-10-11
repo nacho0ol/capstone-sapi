@@ -1,8 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
-<div>
-    <h2 class="font-bold text-gray-700 text-base mb-3">Menu Keuangan & Laporan</h2>
+<div x-data="{ showSetting: false }">
+    
+    <div class="flex justify-between items-center mb-3">
+        <h2 class="font-bold text-gray-700 text-base">Menu Keuangan & Laporan</h2>
+        <button @click="showSetting = true" class="text-blue-600 bg-blue-50 hover:bg-blue-100 p-2 rounded-full border border-blue-200 shadow-sm flex items-center justify-center focus:outline-none" title="Pengaturan Notifikasi">
+            🔔 <span class="sr-only">Pengaturan Notifikasi</span>
+        </button>
+    </div>
 
     <!-- Tab Navigasi Keuangan -->
     <div class="flex border-b border-gray-200 mb-4 overflow-x-auto text-[11px]">
@@ -12,6 +18,7 @@
         <a href="{{ route('keuangan.index', ['tab' => 'pengeluaran']) }}" class="px-3 py-2 font-semibold whitespace-nowrap {{ $tab == 'pengeluaran' ? 'border-b-2 border-red-600 text-red-600' : 'text-gray-500' }}">List Pengeluaran</a>
     </div>
 
+    <!-- ISI TAB (LABA RUGI) -->
     @if($tab == 'labarugi')
         <div class="space-y-3">
             <div class="bg-red-50 border-l-4 border-red-600 p-3 rounded shadow-sm">
@@ -29,11 +36,12 @@
                 </div>
             </div>
         </div>
+        
+    <!-- ISI TAB (RIWAYAT) -->
     @elseif($tab == 'riwayat')
         <div class="space-y-2">
             @foreach($pesanan as $p)
                 <div x-data="{ showDetail: false }">
-                    
                     <div @click="showDetail = true" class="cursor-pointer bg-white border border-gray-200 rounded p-2.5 text-xs shadow-sm flex justify-between items-center hover:bg-red-50 transition-colors">
                         <div>
                             <span class="font-bold text-red-600">{{ $p->id_pesanan }}</span>
@@ -47,7 +55,6 @@
 
                     <div x-show="showDetail" class="fixed inset-0 bg-black bg-opacity-60 z-[60] flex justify-center items-center p-4" style="display: none;" x-cloak>
                         <div class="bg-white rounded-lg w-full max-w-sm shadow-xl flex flex-col max-h-[90vh]">
-                            
                             <!-- Header Modal -->
                             <div class="p-3 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-lg">
                                 <div>
@@ -59,7 +66,6 @@
                             
                             <!-- Body Modal (Scrollable) -->
                             <div class="p-4 overflow-y-auto text-xs space-y-3">
-                                <!-- Info Dasar -->
                                 <div class="grid grid-cols-2 gap-2 text-[11px] bg-gray-50 p-2.5 rounded border border-gray-200">
                                     <div>
                                         <span class="text-gray-500 block">Pelanggan:</span>
@@ -79,7 +85,6 @@
                                     </div>
                                 </div>
 
-                                <!-- List Item Produk -->
                                 <div>
                                     <h4 class="font-bold text-gray-700 border-b border-gray-200 pb-1 mb-2 text-[11px] uppercase tracking-wider">Item Produk</h4>
                                     <div class="space-y-2">
@@ -97,7 +102,6 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Kolom Catatan (Jika Ada) -->
                                 @if($p->catatan)
                                     <div class="bg-yellow-50 p-2.5 border border-yellow-200 rounded">
                                         <span class="font-bold text-[10px] text-yellow-700 uppercase">Catatan Pesanan:</span>
@@ -106,13 +110,11 @@
                                 @endif
                             </div>
 
-                            <!-- Footer Modal (Total) -->
                             <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg flex justify-between items-center">
                                 <span class="font-bold text-gray-600 text-sm">Total Tagihan:</span>
                                 <span class="font-bold text-red-700 text-lg">Rp {{ number_format($totalTagihan, 0, ',', '.') }}</span>
                             </div>
 
-                            <!-- Form Ekstra untuk Cicilan Piutang -->
                             @if($p->metode_bayar == 'Tempo' && $p->status_bayar != 'Lunas' && $p->piutang)
                                 <div class="p-4 bg-blue-50 border-t border-blue-200 rounded-b-lg">
                                     <h4 class="text-xs font-bold text-blue-800 mb-2 uppercase tracking-wider">Update Pembayaran Piutang</h4>
@@ -135,6 +137,7 @@
             @endforeach
         </div>
 
+    <!-- ISI TAB (PIUTANG) -->
     @elseif($tab == 'piutang')
         <div class="mb-3">
             <a href="{{ route('piutang.index') }}" class="block w-full bg-blue-50 text-blue-600 border border-blue-200 text-center py-2 rounded shadow-sm text-xs font-bold hover:bg-blue-100">
@@ -153,12 +156,12 @@
             @endforeach
         </div>
         
+    <!-- ISI TAB (PENGELUARAN) -->
     @else
         <div x-data="{ 
             showEdit: false, 
             editData: { id_pengeluaran: '', tgl_pengeluaran: '', kategori_pengeluaran: '', nominal: '', keterangan: '' } 
         }">
-            
             <div class="space-y-3">
                 @forelse($pengeluaran as $pen)
                     <div class="bg-white border border-gray-200 rounded-lg p-3 shadow-sm flex flex-col hover:bg-gray-50 transition-colors">
@@ -173,13 +176,11 @@
                             </div>
                         </div>
                         
-                        <!-- Tombol Aksi (Edit & Hapus) -->
                         <div class="flex justify-end space-x-2 border-t pt-2 mt-1">
                             <button @click="editData = {{ json_encode($pen) }}; showEdit = true;" class="text-[10px] bg-yellow-50 text-yellow-700 border border-yellow-200 px-3 py-1 rounded hover:bg-yellow-100 font-bold">
                                 Edit
                             </button>
                             
-                            <!-- PERBAIKAN: Menggunakan url() agar tidak nyasar ke route API -->
                             <form action="{{ url('/pengeluaran/' . $pen->id_pengeluaran) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus catatan pengeluaran ini?');">
                                 @csrf
                                 @method('DELETE')
@@ -202,7 +203,6 @@
                     <button @click="showEdit = false" class="absolute top-3 right-3 text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
                     <h3 class="font-bold text-gray-800 mb-4 text-lg border-b pb-2">Edit Pengeluaran</h3>
                     
-                    <!-- PERBAIKAN: Menggunakan url() untuk Update -->
                     <form :action="'{{ url('/pengeluaran') }}/' + editData.id_pengeluaran" method="POST" class="space-y-3">
                         @csrf
                         @method('PUT')
@@ -237,5 +237,75 @@
             </div>
         </div>
     @endif
+
+    <!-- MODAL SETTING NOTIFIKASI TELEGRAM (MUNCUL SAAT ICON 🔔 DIKLIK) -->
+    <div x-show="showSetting" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4" style="display: none;" x-cloak>
+        <div class="bg-white rounded-xl w-full max-w-md p-4 shadow-xl relative max-h-[90vh] overflow-y-auto">
+            <button @click="showSetting = false" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 font-bold text-2xl leading-none">&times;</button>
+            
+            <h3 class="font-bold text-gray-800 mb-1 text-sm">⚙️ Pengaturan Notifikasi Telegram</h3>
+            <p class="text-[10px] text-gray-500 mb-4 border-b pb-2">Atur bot Telegram dan jadwal pengingat piutang pelanggan.</p>
+            
+            <form action="{{ url('/pengaturan/notifikasi') }}" method="POST" class="space-y-3 text-xs">
+                @csrf
+                
+                <!-- Mengambil data H- dari variabel $pengaturan (kalau ada) -->
+                @php
+                    $h_minus = $pengaturan->h_minus_notifikasi ?? [];
+                    if(is_string($h_minus)) $h_minus = json_decode($h_minus, true) ?? [];
+                @endphp
+
+                <div>
+                    <label class="block text-gray-600 font-bold mb-1">Status Notifikasi</label>
+                    <select name="is_notif_aktif" class="w-full border border-gray-300 rounded p-2 focus:outline-none focus:border-blue-500">
+                        <option value="1" {{ ($pengaturan->is_notif_aktif ?? 0) == 1 ? 'selected' : '' }}>🟢 Aktif - Kirim Notifikasi</option>
+                        <option value="0" {{ ($pengaturan->is_notif_aktif ?? 0) == 0 ? 'selected' : '' }}>🔴 Nonaktif - Jangan Kirim</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-gray-600 font-bold mb-1">Telegram Bot Token</label>
+                    <input type="text" name="telegram_bot_token" value="{{ $pengaturan->telegram_bot_token ?? '' }}" class="w-full border border-gray-300 rounded p-2 focus:outline-none focus:border-blue-500" placeholder="Contoh: 123456789:ABC-DEF1234ghIkl...">
+                </div>
+
+                <div>
+                    <label class="block text-gray-600 font-bold mb-1">Telegram Chat ID (Grup/Personal)</label>
+                    <input type="text" name="telegram_chat_id" value="{{ $pengaturan->telegram_chat_id ?? '' }}" class="w-full border border-gray-300 rounded p-2 focus:outline-none focus:border-blue-500" placeholder="Contoh: -1001234567890">
+                </div>
+
+                <div>
+                    <label class="block text-gray-600 font-bold mb-1">Waktu Pengingat <span class="font-normal italic text-gray-400">(Bisa pilih lebih dari satu)</span></label>
+                    <div class="grid grid-cols-2 gap-2 mt-1">
+                        <label class="flex items-center space-x-2 bg-gray-50 hover:bg-blue-50 p-2 rounded border border-gray-200 cursor-pointer">
+                            <input type="checkbox" name="h_minus_notifikasi[]" value="3" {{ in_array('3', $h_minus) ? 'checked' : '' }} class="accent-blue-600">
+                            <span>H-3 Jatuh Tempo</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-gray-50 hover:bg-blue-50 p-2 rounded border border-gray-200 cursor-pointer">
+                            <input type="checkbox" name="h_minus_notifikasi[]" value="2" {{ in_array('2', $h_minus) ? 'checked' : '' }} class="accent-blue-600">
+                            <span>H-2 Jatuh Tempo</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-gray-50 hover:bg-blue-50 p-2 rounded border border-gray-200 cursor-pointer">
+                            <input type="checkbox" name="h_minus_notifikasi[]" value="1" {{ in_array('1', $h_minus) ? 'checked' : '' }} class="accent-blue-600">
+                            <span>H-1 Jatuh Tempo</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-gray-50 hover:bg-blue-50 p-2 rounded border border-gray-200 cursor-pointer">
+                            <input type="checkbox" name="h_minus_notifikasi[]" value="0" {{ in_array('0', $h_minus) ? 'checked' : '' }} class="accent-blue-600">
+                            <span class="font-bold text-red-600">Hari H (Jatuh Tempo)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-gray-600 font-bold mb-1">Template Pesan Tagihan (WA/Telegram)</label>
+                    <p class="text-[10px] text-gray-400 mb-1">Gunakan <b>{nama}</b>, <b>{tagihan}</b>, <b>{jatuh_tempo}</b> untuk teks otomatis.</p>
+                    <textarea name="template_tagihan" rows="4" class="w-full border border-gray-300 rounded p-2 focus:outline-none focus:border-blue-500" required>{{ $pengaturan->template_tagihan ?? "Halo {nama},\nTagihan piutang Anda sebesar Rp {tagihan} akan jatuh tempo pada {jatuh_tempo}. Mohon segera melakukan pembayaran." }}</textarea>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2.5 rounded font-bold hover:bg-blue-700 shadow w-full transition-colors">💾 Simpan Pengaturan Notifikasi</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
