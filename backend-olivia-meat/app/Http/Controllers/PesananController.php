@@ -96,6 +96,7 @@ class PesananController extends Controller
                     'id_produk' => $item['id_produk'],
                     'qty' => $item['qty'],
                     'harga_jual_saat_ini' => $produk->harga_jual,
+                    'subtotal' => $subtotal,
                     'is_deleted' => 0
                 ]);
             }
@@ -193,6 +194,7 @@ class PesananController extends Controller
                     'id_produk' => $item['id_produk'],
                     'qty' => $item['qty'],
                     'harga_jual_saat_ini' => $produk->harga_jual,
+                    'subtotal' => $subtotal,
                     'is_deleted' => 0
                 ]);
             }

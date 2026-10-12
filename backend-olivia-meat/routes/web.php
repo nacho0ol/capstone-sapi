@@ -41,6 +41,8 @@ use App\Http\Controllers\ProfilController;
 Route::get('/keuangan', [KeuanganController::class, 'index'])->name('keuangan.index');
 
 Route::post('/pengaturan/notifikasi', [KeuanganController::class, 'updateNotifikasi'])->name('pengaturan.notifikasi');
+Route::post('/pengaturan/notifikasi/test', [KeuanganController::class, 'testNotifikasi'])->name('pengaturan.notifikasi.test');
+Route::post('/pengaturan/notifikasi/kirim', [KeuanganController::class, 'kirimPengingatManual'])->name('pengaturan.notifikasi.kirim');
 
 // Rute Profil
 Route::get('/profil', [ProfilController::class, 'index'])->name('profil.index');

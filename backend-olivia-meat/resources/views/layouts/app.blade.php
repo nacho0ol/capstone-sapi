@@ -31,6 +31,12 @@
                 </div>
             @endif
 
+            @if(session('info'))
+                <div class="bg-blue-100 border border-blue-400 text-blue-700 px-3 py-2 rounded mb-3 text-xs">
+                    {{ session('info') }}
+                </div>
+            @endif
+
             @yield('content')
         </main>
 

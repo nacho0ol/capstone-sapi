@@ -305,6 +305,26 @@
                     <button type="submit" class="bg-blue-600 text-white px-4 py-2.5 rounded font-bold hover:bg-blue-700 shadow w-full transition-colors">💾 Simpan Pengaturan Notifikasi</button>
                 </div>
             </form>
+
+            <!-- TOMBOL UJI COBA NOTIFIKASI -->
+            <div class="mt-4 pt-3 border-t border-gray-200">
+                <p class="text-[11px] font-bold text-gray-700 mb-2">🧪 Uji Coba Pengiriman Telegram:</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <form action="{{ route('pengaturan.notifikasi.test') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-2 rounded text-[11px] font-bold shadow text-center transition-colors">
+                            🤖 Tes Koneksi Bot
+                        </button>
+                    </form>
+                    <form action="{{ route('pengaturan.notifikasi.kirim') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-2 rounded text-[11px] font-bold shadow text-center transition-colors">
+                            📢 Cek & Kirim Piutang
+                        </button>
+                    </form>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-2 italic">* Pastikan Anda sudah klik <b>START</b> di bot Telegram sebelum melakukan tes.</p>
+            </div>
         </div>
     </div>
 </div>

@@ -58,4 +58,33 @@ class KeuanganController extends Controller
 
         return redirect()->back()->with('success', 'Pengaturan notifikasi Telegram berhasil disimpan!');
     }
+
+    public function testNotifikasi()
+    {
+        $pengaturan = PengaturanSistem::first();
+        if (!$pengaturan || empty($pengaturan->telegram_bot_token) || empty($pengaturan->telegram_chat_id)) {
+            return redirect()->back()->with('error', 'Silakan isi dan simpan Token Bot & Chat ID terlebih dahulu sebelum tes.');
+        }
+
+        $pesan = "🎉 <b>TES KONEKSI TELEGRAM BERHASIL!</b>\n\nSistem Olivia Meat N Fresh telah berhasil terhubung dengan Telegram Anda pada " . date('d-m-Y H:i:s') . ".";
+        $hasil = \App\Services\TelegramService::sendMessage($pengaturan->telegram_chat_id, $pesan, $pengaturan->telegram_bot_token);
+
+        if ($hasil['success']) {
+            return redirect()->back()->with('success', '✅ Sukses! Pesan tes berhasil dikirim ke akun Telegram Anda.');
+        } else {
+            return redirect()->back()->with('error', '❌ ' . $hasil['message'] . '. Pastikan Anda sudah membuka bot di Telegram dan menekan tombol START.');
+        }
+    }
+
+    public function kirimPengingatManual()
+    {
+        $hasil = \App\Services\TelegramService::kirimPengingatJatuhTempo();
+        if ($hasil['success']) {
+            if (isset($hasil['terkirim']) && $hasil['terkirim'] > 0) {
+                return redirect()->back()->with('success', "✅ {$hasil['message']}");
+            }
+            return redirect()->back()->with('info', "ℹ️ {$hasil['message']}");
+        }
+        return redirect()->back()->with('error', "❌ {$hasil['message']}");
+    }
 }
