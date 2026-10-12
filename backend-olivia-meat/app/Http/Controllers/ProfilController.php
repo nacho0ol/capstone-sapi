@@ -9,14 +9,13 @@ class ProfilController extends Controller
 {
     public function index()
     {
-        // Ambil user pertama sebagai simulasi profil aktif saat ini
-        $user = User::first();
+        $user = auth()->user() ?? User::first();
         return view('profil.index', compact('user'));
     }
 
     public function update(Request $request)
     {
-        $user = User::first();
+        $user = auth()->user() ?? User::first();
         $request->validate([
             'nama' => 'required|string|min:3',
             'username' => 'required|string'

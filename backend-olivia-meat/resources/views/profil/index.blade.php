@@ -30,10 +30,13 @@
         </form>
     </div>
 
-    <div>
-        <a href="{{ route('dashboard') }}" onclick="alert('Berhasil Logout dari Sistem!')" class="block text-center bg-gray-200 text-gray-700 hover:bg-gray-300 py-2.5 rounded-xl text-xs font-bold">
-            🚪 Logout Sistem
-        </a>
+    <div class="pt-2">
+        <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin keluar dari sistem?');">
+            @csrf
+            <button type="submit" class="w-full text-center bg-gray-100 border border-gray-300 text-red-600 hover:bg-red-50 hover:border-red-300 py-2.5 rounded-xl text-xs font-bold transition-colors">
+                🚪 Logout dari Sistem
+            </button>
+        </form>
     </div>
 </div>
 @endsection

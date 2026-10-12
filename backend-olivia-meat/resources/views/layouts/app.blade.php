@@ -14,7 +14,10 @@
         <!-- Header Atas -->
         <header class="bg-red-700 text-white p-4 sticky top-0 z-40 flex justify-between items-center shadow">
             <h1 class="font-bold text-base">🥩 Olivia Meat N Fresh</h1>
-            <a href="{{ route('profil.index') }}" class="text-xs bg-red-800 hover:bg-red-900 px-2.5 py-1.5 rounded font-semibold">Profil / Akun</a>
+            <a href="{{ route('profil.index') }}" class="text-xs bg-red-800 hover:bg-red-900 px-2.5 py-1.5 rounded font-semibold flex items-center space-x-1">
+                <span>👤</span>
+                <span>{{ auth()->user()->nama ?? 'Profil' }}</span>
+            </a>
         </header>
 
         <!-- Mesej Notifikasi -->
