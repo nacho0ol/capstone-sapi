@@ -13,7 +13,6 @@
                 class="inline-flex items-center gap-2 bg-white hover:bg-[#FAE2E2] text-[#842529] border border-border-muted px-3 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 focus:outline-none" 
                 title="Pengaturan Notifikasi Telegram">
             <x-lucide-bell class="w-4 h-4 text-[#842529]" />
-            <span class="hidden sm:inline">Pengaturan Notif</span>
         </button>
     </div>
 
