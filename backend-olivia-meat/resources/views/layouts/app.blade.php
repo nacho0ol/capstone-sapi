@@ -14,12 +14,24 @@
     <!-- Container Frame Web Mobile View -->
     <div class="w-full max-w-md bg-white min-h-screen shadow-xl flex flex-col justify-between relative pb-20">
         
-        <!-- Header Atas -->
-        <header class="bg-[#842529] text-white p-4 sticky top-0 z-40 flex justify-between items-center shadow-md">
-            <div class="flex items-center gap-2">
-                <x-lucide-beef class="w-5 h-5 text-white" />
+        <!-- Header Atas dengan Logo (.jpeg) -->
+        <header class="bg-[#842529] text-white px-4 py-3 sticky top-0 z-40 flex justify-between items-center shadow-md">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 bg-white rounded-xl flex items-center justify-center p-1 shadow-sm flex-shrink-0">
+                    <img src="{{ asset('images/logo.jpeg') }}" 
+                         alt="Logo Olivia Meat N Fresh" 
+                         class="max-h-full max-w-full object-contain"
+                         onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                    <x-lucide-beef class="w-5 h-5 text-[#842529] hidden" />
+                </div>
                 <h1 class="font-bold text-sm tracking-tight">Olivia Meat N Fresh</h1>
             </div>
+
+            <a href="{{ route('profil.index') }}" 
+               class="text-xs bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all border border-white/10">
+                <x-lucide-user class="w-3.5 h-3.5" />
+                <span>{{ auth()->user()->nama ?? 'Profil' }}</span>
+            </a>
         </header>
 
         <!-- Main Content & Notifikasi -->
