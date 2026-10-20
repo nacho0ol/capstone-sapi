@@ -9,61 +9,160 @@
     <style>[x-cloak] { display: none !important; }</style>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="bg-gray-100 flex justify-center min-h-screen text-gray-800 antialiased" x-data="{ openAddMenu: false }">
+<body class="bg-gray-100 min-h-screen text-gray-800 antialiased" x-data="{ openAddMenu: false }">
 
-    <!-- Container Frame Web Mobile View -->
-    <div class="w-full max-w-md bg-white min-h-screen shadow-xl flex flex-col justify-between relative pb-20">
+    <div class="min-h-screen flex flex-col md:flex-row">
         
-        <!-- Header Atas dengan Logo (.jpeg) -->
-        <header class="bg-[#842529] text-white px-4 py-3 sticky top-0 z-40 flex justify-between items-center shadow-md">
-            <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 bg-white rounded-xl flex items-center justify-center p-1 shadow-sm flex-shrink-0">
-                    <img src="{{ asset('images/logo.jpeg') }}" 
-                         alt="Logo Olivia Meat N Fresh" 
-                         class="max-h-full max-w-full object-contain"
-                         onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
-                    <x-lucide-beef class="w-5 h-5 text-[#842529] hidden" />
+        <!-- SIDEBAR DESKTOP (Muncul cuma di Layar Laptop/PC / md:flex) -->
+        <aside class="hidden md:flex flex-col w-64 bg-white border-r border-border-muted fixed inset-y-0 left-0 z-40 p-4 justify-between shadow-sm">
+            <div class="space-y-6">
+                <!-- Logo & Brand Header -->
+                <div class="flex items-center gap-3 px-2 py-2 border-b border-border-muted pb-4">
+                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1 shadow-sm flex-shrink-0 border border-gray-100">
+                        <img src="{{ asset('images/logo.jpeg') }}" 
+                             alt="Logo Olivia Meat N Fresh" 
+                             class="max-h-full max-w-full object-contain"
+                             onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                        <x-lucide-beef class="w-6 h-6 text-[#842529] hidden" />
+                    </div>
+                    <div>
+                        <h1 class="font-extrabold text-sm text-[#842529] leading-tight">Olivia Meat N Fresh</h1>
+                        <p class="text-[10px] text-gray-400 font-medium">Akuntansi & Piutang</p>
+                    </div>
                 </div>
-                <h1 class="font-bold text-sm tracking-tight">Olivia Meat N Fresh</h1>
+
+                <!-- Menu Navigasi Sidebar -->
+                <nav class="space-y-1.5 text-xs font-semibold">
+                    <a href="{{ route('dashboard') }}" 
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('dashboard') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
+                        <x-lucide-layout-dashboard class="w-4 h-4" />
+                        <span>Beranda</span>
+                    </a>
+
+                    <a href="{{ route('master.index') }}" 
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('master.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
+                        <x-lucide-database class="w-4 h-4" />
+                        <span>Kelola Data</span>
+                    </a>
+
+                    <a href="{{ route('keuangan.index') }}" 
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('keuangan.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
+                        <x-lucide-receipt class="w-4 h-4" />
+                        <span>Keuangan</span>
+                    </a>
+                </nav>
             </div>
 
-            <a href="{{ route('profil.index') }}" 
-               class="text-xs bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all border border-white/10">
-                <x-lucide-user class="w-3.5 h-3.5" />
-                <span>{{ auth()->user()->nama ?? 'Profil' }}</span>
-            </a>
-        </header>
+            <!-- Tombol Tambah & Profil Sidebar -->
+            <div class="space-y-3 pt-4 border-t border-border-muted">
+                <button @click="openAddMenu = !openAddMenu" 
+                        class="w-full flex items-center justify-center gap-2 bg-[#842529] hover:bg-red-900 text-white py-2.5 px-3 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95">
+                    <x-lucide-plus-circle class="w-4 h-4 text-white" />
+                    <span>Tambah Data Fast</span>
+                </button>
 
-        <!-- Main Content & Notifikasi -->
-        <main class="p-4 flex-1">
-            @if(session('success'))
-                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2.5 rounded-xl mb-3 text-xs font-medium flex items-center gap-2 shadow-sm">
-                    <x-lucide-check-circle-2 class="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>{{ session('success') }}</span>
+                <a href="{{ route('profil.index') }}" 
+                   class="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-border-muted hover:border-[#842529] transition-all">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <div class="w-7 h-7 rounded-lg bg-[#FAE2E2] text-[#842529] flex items-center justify-center font-bold text-xs">
+                            <x-lucide-user class="w-4 h-4" />
+                        </div>
+                        <span class="text-xs font-bold text-gray-800 truncate">{{ auth()->user()->nama ?? 'Profil' }}</span>
+                    </div>
+                    <x-lucide-chevron-right class="w-4 h-4 text-gray-400" />
+                </a>
+            </div>
+        </aside>
+
+        <!-- AREA UTAMA KONTEN (Menyesuaikan lebar otomatis) -->
+        <div class="flex-1 flex flex-col min-h-screen md:pl-64">
+            
+            <!-- HEADER MOBILE (Cuma muncul di HP / md:hidden) -->
+            <header class="md:hidden bg-[#842529] text-white px-4 py-3 sticky top-0 z-40 flex justify-between items-center shadow-md">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 bg-white rounded-xl flex items-center justify-center p-1 shadow-sm flex-shrink-0">
+                        <img src="{{ asset('images/logo.jpeg') }}" 
+                             alt="Logo Olivia Meat N Fresh" 
+                             class="max-h-full max-w-full object-contain"
+                             onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
+                        <x-lucide-beef class="w-5 h-5 text-[#842529] hidden" />
+                    </div>
+                    <h1 class="font-bold text-sm tracking-tight">Olivia Meat N Fresh</h1>
                 </div>
-            @endif
 
-            @if(session('error'))
-                <div class="bg-rose-50 border border-rose-200 text-rose-800 px-3 py-2.5 rounded-xl mb-3 text-xs font-medium flex items-center gap-2 shadow-sm">
-                    <x-lucide-alert-circle class="w-4 h-4 text-rose-600 flex-shrink-0" />
-                    <span>{{ session('error') }}</span>
-                </div>
-            @endif
+                <a href="{{ route('profil.index') }}" 
+                   class="text-xs bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded-xl font-semibold flex items-center gap-1.5 transition-all border border-white/10">
+                    <x-lucide-user class="w-3.5 h-3.5" />
+                    <span>{{ auth()->user()->nama ?? 'Profil' }}</span>
+                </a>
+            </header>
 
-            @if(session('info'))
-                <div class="bg-sky-50 border border-sky-200 text-sky-800 px-3 py-2.5 rounded-xl mb-3 text-xs font-medium flex items-center gap-2 shadow-sm">
-                    <x-lucide-info class="w-4 h-4 text-sky-600 flex-shrink-0" />
-                    <span>{{ session('info') }}</span>
-                </div>
-            @endif
+            <!-- KONTEN HALAMAN (Di HP max-w-md, di Laptop melebar max-w-7xl) -->
+            <main class="p-4 sm:p-6 md:p-8 flex-1 w-full max-w-md md:max-w-7xl mx-auto pb-24 md:pb-8">
+                @if(session('success'))
+                    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2.5 rounded-xl mb-3 text-xs font-medium flex items-center gap-2 shadow-sm">
+                        <x-lucide-check-circle-2 class="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                        <span>{{ session('success') }}</span>
+                    </div>
+                @endif
 
-            @yield('content')
-        </main>
+                @if(session('error'))
+                    <div class="bg-rose-50 border border-rose-200 text-rose-800 px-3 py-2.5 rounded-xl mb-3 text-xs font-medium flex items-center gap-2 shadow-sm">
+                        <x-lucide-alert-circle class="w-4 h-4 text-rose-600 flex-shrink-0" />
+                        <span>{{ session('error') }}</span>
+                    </div>
+                @endif
+
+                @if(session('info'))
+                    <div class="bg-sky-50 border border-sky-200 text-sky-800 px-3 py-2.5 rounded-xl mb-3 text-xs font-medium flex items-center gap-2 shadow-sm">
+                        <x-lucide-info class="w-4 h-4 text-sky-600 flex-shrink-0" />
+                        <span>{{ session('info') }}</span>
+                    </div>
+                @endif
+
+                @yield('content')
+            </main>
+
+            <!-- NAVIGATION BAR BAWAH (Cuma muncul di HP / md:hidden) -->
+            <nav class="md:hidden bg-white border-t border-border-muted fixed bottom-0 left-0 right-0 flex justify-around items-center py-2 shadow-lg z-40">
+                <a href="{{ route('dashboard') }}" 
+                   class="flex flex-col items-center gap-0.5 text-[10px] {{ request()->routeIs('dashboard') ? 'text-[#842529] font-bold' : 'text-gray-500' }}">
+                    <x-lucide-layout-dashboard class="w-5 h-5" />
+                    <span>Beranda</span>
+                </a>
+
+                <a href="{{ route('master.index') }}" 
+                   class="flex flex-col items-center gap-0.5 text-[10px] {{ request()->routeIs('master.*') ? 'text-[#842529] font-bold' : 'text-gray-500' }}">
+                    <x-lucide-database class="w-5 h-5" />
+                    <span>Kelola Data</span>
+                </a>
+                
+                <button @click="openAddMenu = !openAddMenu" class="flex flex-col items-center gap-0.5 text-[10px] text-gray-500 focus:outline-none -mt-4">
+                    <div class="w-11 h-11 bg-[#842529] text-white rounded-full flex items-center justify-center shadow-md border-2 border-white active:scale-90 transition-transform">
+                        <x-lucide-plus class="w-6 h-6 text-white" />
+                    </div>
+                    <span class="font-bold text-[#842529]">Tambah</span>
+                </button>
+
+                <a href="{{ route('keuangan.index') }}" 
+                   class="flex flex-col items-center gap-0.5 text-[10px] {{ request()->routeIs('keuangan.*') ? 'text-[#842529] font-bold' : 'text-gray-500' }}">
+                    <x-lucide-receipt class="w-5 h-5" />
+                    <span>Keuangan</span>
+                </a>
+
+                <a href="{{ route('profil.index') }}" 
+                   class="flex flex-col items-center gap-0.5 text-[10px] {{ request()->routeIs('profil.*') ? 'text-[#842529] font-bold' : 'text-gray-500' }}">
+                    <x-lucide-user class="w-5 h-5" />
+                    <span>Akun</span>
+                </a>
+            </nav>
+
+        </div>
 
         <!-- POPUP MENU TAMBAH DATA (+) -->
         <div x-show="openAddMenu" x-cloak 
              @click.away="openAddMenu = false" 
-             class="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-11/12 max-w-sm bg-white rounded-2xl shadow-2xl border border-border-muted p-4 z-50 space-y-2" 
+             class="fixed bottom-20 md:bottom-auto md:top-1/2 left-1/2 transform -translate-x-1/2 md:-translate-y-1/2 w-11/12 max-w-sm bg-white rounded-2xl shadow-2xl border border-border-muted p-4 z-50 space-y-2" 
              x-transition>
             
             <div class="flex justify-between items-center border-b border-border-muted pb-2 mb-2">
@@ -97,41 +196,6 @@
                 <span>Tambah Pelanggan Baru</span>
             </a>
         </div>
-
-        <!-- Navigation Bar Bawah Mobile -->
-        <nav class="w-full max-w-md bg-white border-t border-border-muted fixed bottom-0 flex justify-around items-center py-2 shadow-lg z-40">
-            <a href="{{ route('dashboard') }}" 
-               class="flex flex-col items-center gap-0.5 text-[10px] {{ request()->routeIs('dashboard') ? 'text-[#842529] font-bold' : 'text-gray-500' }}">
-                <x-lucide-layout-dashboard class="w-5 h-5" />
-                <span>Beranda</span>
-            </a>
-
-            <a href="{{ route('master.index') }}" 
-               class="flex flex-col items-center gap-0.5 text-[10px] {{ request()->routeIs('master.*') ? 'text-[#842529] font-bold' : 'text-gray-500' }}">
-                <x-lucide-database class="w-5 h-5" />
-                <span>Kelola Data</span>
-            </a>
-            
-            <!-- Tombol Floating (+) -->
-            <button @click="openAddMenu = !openAddMenu" class="flex flex-col items-center gap-0.5 text-[10px] text-gray-500 focus:outline-none -mt-4">
-                <div class="w-11 h-11 bg-[#842529] text-white rounded-full flex items-center justify-center shadow-md border-2 border-white active:scale-90 transition-transform">
-                    <x-lucide-plus class="w-6 h-6 text-white" />
-                </div>
-                <span class="font-bold text-[#842529]">Tambah</span>
-            </button>
-
-            <a href="{{ route('keuangan.index') }}" 
-               class="flex flex-col items-center gap-0.5 text-[10px] {{ request()->routeIs('keuangan.*') ? 'text-[#842529] font-bold' : 'text-gray-500' }}">
-                <x-lucide-receipt class="w-5 h-5" />
-                <span>Keuangan</span>
-            </a>
-
-            <a href="{{ route('profil.index') }}" 
-               class="flex flex-col items-center gap-0.5 text-[10px] {{ request()->routeIs('profil.*') ? 'text-[#842529] font-bold' : 'text-gray-500' }}">
-                <x-lucide-user class="w-5 h-5" />
-                <span>Akun</span>
-            </a>
-        </nav>
 
     </div>
 
