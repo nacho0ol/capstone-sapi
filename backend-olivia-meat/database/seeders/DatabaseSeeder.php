@@ -15,10 +15,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
-            'nama' => 'Admin Olivia',
-            'username' => 'admin',
-            'password' => bcrypt('password123'),
-        ]);
+        User::firstOrCreate(
+            ['username' => 'admin'],
+            [
+                'nama' => 'Admin Olivia',
+                'password' => bcrypt('password123'),
+            ]
+        );
     }
 }

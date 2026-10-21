@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('nama', 50);
             $table->string('username', 20)->unique();
             $table->string('password', 255);
+            $table->rememberToken();
             $table->boolean('is_deleted')->default(0); // Kolom tambahan dari SQL-mu
             $table->timestamps();
         });
