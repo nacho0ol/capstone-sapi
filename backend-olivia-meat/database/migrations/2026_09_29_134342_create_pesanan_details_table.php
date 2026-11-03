@@ -15,8 +15,8 @@ return new class extends Migration
             $table->foreign('id_pesanan')->references('id_pesanan')->on('pesanans');
             $table->foreignId('id_produk')->references('id_produk')->on('produks');
             
-            // QTY di SQL aslinya (3,2), bukan (10,2)
-            $table->decimal('qty', 3, 2); 
+            // QTY menggunakan (10,2) agar bisa menampung pesanan >= 10 kg
+            $table->decimal('qty', 10, 2); 
             $table->integer('harga_jual_saat_ini');
             
             // Dibuat otomatis Generated Always Store seperti MySQL Asli!

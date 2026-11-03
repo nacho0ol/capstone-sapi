@@ -39,6 +39,12 @@
                         <span>Beranda</span>
                     </a>
 
+                    <a href="{{ route('transaksi.index') }}" 
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('transaksi.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
+                        <x-lucide-shopping-bag class="w-4 h-4" />
+                        <span>Daftar Pesanan</span>
+                    </a>
+
                     <a href="{{ route('master.index') }}" 
                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('master.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
                         <x-lucide-database class="w-4 h-4" />

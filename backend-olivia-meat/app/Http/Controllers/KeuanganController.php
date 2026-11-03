@@ -17,13 +17,14 @@ class KeuanganController extends Controller
         // Data Laba Rugi
         $totalPemasukan = Pesanan::where('pesanans.is_deleted', 0)
             ->where('pesanans.status_bayar', 'Lunas')
+            ->whereNotIn('pesanans.status_pemesanan', ['Ditolak', 'Dibatalkan', 'ditolak', 'dibatalkan'])
             ->join('pesanan_details', 'pesanans.id_pesanan', '=', 'pesanan_details.id_pesanan')
             ->sum(\DB::raw('pesanan_details.subtotal'));
 
         $totalPengeluaran = PengeluaranHarian::sum('nominal'); // No is_deleted on pengeluaran_harian
         $labaRugi = $totalPemasukan - $totalPengeluaran;
 
-        $pesanan = Pesanan::with(['pelanggan', 'detail.produk'])->where('is_deleted', 0)->orderBy('tgl_order', 'desc')->get();
+        $pesanan = Pesanan::with(['pelanggan', 'detail.produk', 'piutang'])->where('is_deleted', 0)->orderBy('tgl_order', 'desc')->orderBy('id_pesanan', 'desc')->get();
         $piutang = Piutang::where('is_deleted', 0)->get();
         $pengeluaran = PengeluaranHarian::orderBy('tgl_pengeluaran', 'desc')->get(); // No is_deleted
         

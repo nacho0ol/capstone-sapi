@@ -6,7 +6,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-xl font-bold text-gray-900">Ringkasan Keuangan</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Monitoring transaksi & piutang Olivia Meat N Fresh</p>
+            <p class="text-xs text-gray-500 mt-0.5">Monitoring pesanan & piutang Olivia Meat N Fresh</p>
         </div>
         <!-- Cuma muncul di Laptop/Desktop (hidden sm:inline-flex) -->
         <a href="{{ route('transaksi.index') }}" 

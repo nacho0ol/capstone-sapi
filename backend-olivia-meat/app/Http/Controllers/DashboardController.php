@@ -16,6 +16,7 @@ class DashboardController extends Controller
         $pemasukanLangsung = Pesanan::where('status_bayar', 'Lunas')
                             ->where('metode_bayar', '!=', 'Tempo')
                             ->where('is_deleted', 0)
+                            ->whereNotIn('status_pemesanan', ['Ditolak', 'Dibatalkan', 'ditolak', 'dibatalkan'])
                             ->with('detail')
                             ->get()
                             ->sum(function ($pesanan) {

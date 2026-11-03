@@ -7,7 +7,7 @@
     <div class="flex justify-between items-center">
         <div>
             <h1 class="text-xl font-bold text-gray-900">Keuangan & Laporan</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Analisis laba rugi, riwayat transaksi, dan pengeluaran</p>
+            <p class="text-xs text-gray-500 mt-0.5">Analisis laba rugi, daftar pesanan, dan pengeluaran</p>
         </div>
         <button @click="showSetting = true" 
                 class="inline-flex items-center gap-2 bg-white hover:bg-[#FAE2E2] text-[#842529] border border-border-muted px-3 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 focus:outline-none" 
@@ -26,7 +26,7 @@
         <a href="{{ route('keuangan.index', ['tab' => 'riwayat']) }}" 
            class="py-3 px-4 sm:px-6 text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 {{ $tab == 'riwayat' ? 'border-b-2 border-[#842529] text-[#842529]' : 'text-gray-500 hover:text-gray-700' }}">
             <x-lucide-history class="w-4 h-4" />
-            <span>Riwayat Transaksi</span>
+            <span>Daftar Pesanan</span>
         </a>
         <a href="{{ route('keuangan.index', ['tab' => 'piutang']) }}" 
            class="py-3 px-4 sm:px-6 text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 {{ $tab == 'piutang' ? 'border-b-2 border-[#842529] text-[#842529]' : 'text-gray-500 hover:text-gray-700' }}">
@@ -84,16 +84,32 @@
             </div>
         </div>
         
-    <!-- ================= ISI TAB 2: RIWAYAT TRANSAKSI ================= -->
+    <!-- ================= ISI TAB 2: DAFTAR PESANAN ================= -->
     @elseif($tab == 'riwayat')
         <div class="space-y-3">
             @foreach($pesanan as $p)
+                @php
+                    $statusLower = strtolower($p->status_pemesanan);
+                    $isCancelled = in_array($statusLower, ['ditolak', 'dibatalkan']);
+                    $isCompleted = $statusLower === 'selesai';
+                    $statusLabel = $isCancelled ? 'Dibatalkan' : ucfirst($p->status_pemesanan);
+                    $statusBadgeClass = $statusLower === 'diterima'
+                        ? 'bg-sky-50 border-sky-200 text-sky-700'
+                        : ($isCompleted
+                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                            : ($isCancelled
+                                ? 'bg-rose-50 border-rose-200 text-rose-700'
+                                : 'bg-amber-50 border-amber-200 text-amber-700'));
+                @endphp
                 <div x-data="{ showDetail: false }">
                     <div @click="showDetail = true" 
-                         class="cursor-pointer bg-white border border-border-muted rounded-2xl p-4 text-xs shadow-sm flex justify-between items-center hover:border-gray-400 hover:shadow-md transition-all">
+                         class="cursor-pointer bg-white border border-border-muted rounded-2xl p-4 text-xs shadow-sm flex justify-between items-center hover:border-gray-400 hover:shadow-md transition-all {{ $isCancelled ? 'opacity-75' : '' }}">
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
                                 <span class="font-bold text-[#842529] font-mono text-sm">{{ $p->id_pesanan }}</span>
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border {{ $statusBadgeClass }}">
+                                    {{ $statusLabel }}
+                                </span>
                                 <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border {{ $p->status_bayar == 'Lunas' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700' }}">
                                     {{ $p->status_bayar }}
                                 </span>
@@ -138,18 +154,23 @@
                                     <div>
                                         <span class="text-gray-500 block text-[11px]">Pelanggan</span>
                                         <span class="font-bold text-gray-800">{{ $p->pelanggan->nama_pelanggan ?? '-' }}</span>
+                                        @if(!empty($p->pelanggan->no_telp))
+                                            <span class="text-[11px] text-gray-500 block">{{ $p->pelanggan->no_telp }}</span>
+                                        @endif
                                     </div>
                                     <div>
-                                        <span class="text-gray-500 block text-[11px]">Tanggal Order</span>
-                                        <span class="font-bold text-gray-800">{{ $p->tgl_order }}</span>
+                                        <span class="text-gray-500 block text-[11px]">Tanggal Order / Antar</span>
+                                        <span class="font-bold text-gray-800">{{ $p->tgl_order }} / {{ $p->tgl_antar }}</span>
                                     </div>
                                     <div>
                                         <span class="text-gray-500 block text-[11px]">Metode Bayar</span>
                                         <span class="font-bold text-gray-800">{{ $p->metode_bayar }}</span>
                                     </div>
                                     <div>
-                                        <span class="text-gray-500 block text-[11px]">Status</span>
+                                        <span class="text-gray-500 block text-[11px]">Status Bayar / Pesanan</span>
                                         <span class="font-bold {{ $p->status_bayar == 'Lunas' ? 'text-emerald-700' : 'text-amber-700' }}">{{ $p->status_bayar }}</span>
+                                        <span class="text-gray-400">•</span>
+                                        <span class="font-bold {{ $isCancelled ? 'text-rose-700' : 'text-sky-700' }}">{{ $statusLabel }}</span>
                                     </div>
                                 </div>
 
@@ -161,7 +182,7 @@
                                             @php $totalTagihan += $det->subtotal; @endphp
                                             <div class="flex justify-between items-center bg-white border border-border-muted p-3 rounded-xl">
                                                 <div>
-                                                    <p class="font-bold text-gray-800">{{ $det->produk->nama_produk ?? 'Unknown' }}</p>
+                                                    <p class="font-bold text-gray-800">{{ $det->produk->nama_produk ?? 'Produk Terhapus' }}</p>
                                                     <p class="text-[11px] text-gray-500">{{ $det->qty }} kg x Rp {{ number_format($det->harga_jual_saat_ini, 0, ',', '.') }}</p>
                                                 </div>
                                                 <span class="font-bold text-[#842529]">Rp {{ number_format($det->subtotal, 0, ',', '.') }}</span>
@@ -186,7 +207,30 @@
                                 <span class="font-extrabold text-[#842529] text-base">Rp {{ number_format($totalTagihan, 0, ',', '.') }}</span>
                             </div>
 
-                            @if($p->metode_bayar == 'Tempo' && $p->status_bayar != 'Lunas' && $p->piutang)
+                            <!-- Tombol Edit & Batalkan Pesanan -->
+                            <div class="px-4 py-3 border-t border-border-muted bg-white flex items-center gap-2">
+                                @if(!$isCancelled && !$isCompleted)
+                                    <a href="{{ route('transaksi.edit', $p->id_pesanan) }}" 
+                                       class="flex-1 inline-flex items-center justify-center gap-1.5 text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 py-2.5 px-3 rounded-xl font-bold border border-amber-200 transition-colors">
+                                        <x-lucide-square-pen class="w-4 h-4" />
+                                        <span>Edit Pesanan</span>
+                                    </a>
+                                    <form action="{{ route('transaksi.cancel', $p->id_pesanan) }}" method="POST" class="flex-1" onsubmit="return confirm('Batalkan pesanan ini?');">
+                                        @csrf
+                                        <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 py-2.5 px-3 rounded-xl font-bold border border-rose-200 transition-colors">
+                                            <x-lucide-x-circle class="w-4 h-4" />
+                                            <span>Batalkan Pesanan</span>
+                                        </button>
+                                    </form>
+                                @elseif($isCancelled)
+                                    <div class="w-full inline-flex items-center justify-center gap-1.5 text-xs bg-gray-100 text-gray-500 py-2.5 px-3 rounded-xl font-bold border border-gray-200 cursor-not-allowed">
+                                        <x-lucide-ban class="w-4 h-4" />
+                                        <span>Pesanan Sudah Dibatalkan</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            @if(!$isCancelled && $p->metode_bayar == 'Tempo' && $p->status_bayar != 'Lunas' && $p->piutang)
                                 <div class="p-4 bg-sky-50 border-t border-sky-200 space-y-2">
                                     <h4 class="text-xs font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1.5">
                                         <x-lucide-credit-card class="w-4 h-4 text-sky-700" />
