@@ -77,7 +77,7 @@ class MasterDataController extends Controller
     {
         $request->validate([
             // Regex: hanya huruf, angka, dan spasi
-            'nama_produk' => ['required', 'string', 'min:3', 'regex:/^[a-zA-Z0-9\s]+$/'],
+            'nama_produk' => ['required', 'string', 'min:3', 'regex:/^[a-zA-Z]{3}[a-zA-Z0-9\s]*$/'],
             'kategori'    => 'required|in:Daging,Tulang,Buntut,Jeroan,Kaki',
             // Harga disamakan dengan constraint DB: > 1000 dan <= 1000000
             'harga_awal'  => 'required|integer|min:1001|max:1000000',
@@ -86,8 +86,8 @@ class MasterDataController extends Controller
             'nama_jagal'  => ['required', 'string', 'min:3', 'regex:/^[a-zA-Z\s]+$/']
         ], [
             // Pesan error ramah pengguna (ditampilkan di frontend)
-            'nama_produk.regex' => 'Nama produk hanya boleh berisi huruf dan angka (tanpa simbol).',
-            'nama_jagal.regex'  => 'Nama jagal hanya boleh berisi huruf.',
+            'nama_produk.regex' => 'Nama produk hanya boleh berisi huruf dan angka di akhir (tanpa simbol).',
+            'nama_jagal.min'  => 'Nama jagal setidaknya terdiri dari 3 karakter.',
             'harga_awal.min'    => 'Harga modal/awal harus lebih dari Rp 1.000.',
             'harga_awal.max'    => 'Harga modal/awal maksimal Rp 1.000.000.',
             'harga_jual.gte'    => 'Harga jual tidak boleh lebih kecil dari harga modal.',
