@@ -2,8 +2,8 @@
 
 @section('content')
 <div x-data="{ 
-    showForm: false, 
-    showEdit: false, 
+    showForm: {{ $errors->any() && !old('id_pengeluaran') ? 'true' : 'false' }}, 
+    showEdit: {{ $errors->any() && old('id_pengeluaran') ? 'true' : 'false' }},
     
     // State Nominal Tambah
     nominalRaw: '',
@@ -55,8 +55,16 @@
         </button>
     </div>
 
+    <!-- Flash Message Success -->
+    @if(session('success'))
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3.5 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2 shadow-sm">
+            <x-lucide-check-circle-2 class="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
+
     <!-- MODAL TAMBAH PENGELUARAN -->
-    <div x-show="showForm" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
+    <div x-show="showForm" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4">
         <div @click.away="showForm = false" class="bg-white rounded-2xl w-full max-w-md p-5 shadow-xl relative border border-border-muted">
             <button @click="showForm = false" class="absolute top-4 right-4 text-gray-400 hover:text-[#842529] p-1 rounded-lg transition-colors">
                 <x-lucide-x class="w-5 h-5" />
@@ -68,9 +76,21 @@
             
             <form action="{{ url('/pengeluaran/store') }}" method="POST" class="space-y-3">
                 @csrf
+                
+                <!-- KOTAK ERROR DI ATAS FORM TAMBAH -->
+                @if ($errors->any())
+                    <div class="bg-rose-50 border border-rose-200 text-rose-700 px-3 py-2 rounded-xl text-xs mb-2">
+                        <ul class="list-disc pl-4 space-y-0.5">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal</label>
-                    <input type="date" name="tgl_pengeluaran" value="{{ date('Y-m-d') }}" 
+                    <input type="date" name="tgl_pengeluaran" value="{{ old('tgl_pengeluaran', date('Y-m-d')) }}" 
                            class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
                 </div>
                 <div>
@@ -78,11 +98,11 @@
                     <select name="kategori_pengeluaran" 
                             class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
                         <option value="">Pilih Kategori</option>
-                        <option value="Makan">Makan</option>
-                        <option value="Pembelian Daging">Pembelian Daging</option>
-                        <option value="Operasional">Operasional</option>
-                        <option value="Transportasi">Transportasi</option>
-                        <option value="Lain-lain">Lain-lain</option>
+                        <option value="Makan" {{ old('kategori_pengeluaran') == 'Makan' ? 'selected' : '' }}>Makan</option>
+                        <option value="Pembelian Daging" {{ old('kategori_pengeluaran') == 'Pembelian Daging' ? 'selected' : '' }}>Pembelian Daging</option>
+                        <option value="Operasional" {{ old('kategori_pengeluaran') == 'Operasional' ? 'selected' : '' }}>Operasional</option>
+                        <option value="Transportasi" {{ old('kategori_pengeluaran') == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
+                        <option value="Lain-lain" {{ old('kategori_pengeluaran') == 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
                     </select>
                 </div>
                 <div>
@@ -97,7 +117,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Keterangan</label>
                     <textarea name="keterangan" rows="2" 
-                              class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" placeholder="Catatan singkat pengeluaran..." required></textarea>
+                              class="w-full text-xs bg-gray-50 border {{ $errors->has('keterangan') ? 'border-red-500' : 'border-border-muted' }} p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" placeholder="Catatan singkat pengeluaran..." required>{{ old('keterangan') }}</textarea>
                 </div>
                 <div class="pt-3 flex gap-2">
                     <button type="button" @click="showForm = false" class="flex-1 border border-border-muted text-gray-700 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-50">Batal</button>
@@ -108,7 +128,7 @@
     </div>
 
     <!-- MODAL EDIT PENGELUARAN -->
-    <div x-show="showEdit" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
+    <div x-show="showEdit" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4">
         <div @click.away="showEdit = false" class="bg-white rounded-2xl w-full max-w-md p-5 shadow-xl relative border border-border-muted">
             <button @click="showEdit = false" class="absolute top-4 right-4 text-gray-400 hover:text-[#842529] p-1 rounded-lg transition-colors">
                 <x-lucide-x class="w-5 h-5" />
@@ -121,6 +141,19 @@
             <form :action="'{{ url('/pengeluaran') }}/' + editData.id_pengeluaran" method="POST" class="space-y-3">
                 @csrf
                 @method('PUT')
+                <input type="hidden" name="id_pengeluaran" :value="editData.id_pengeluaran">
+                
+                <!-- KOTAK ERROR DI ATAS FORM EDIT -->
+                @if ($errors->any())
+                    <div class="bg-rose-50 border border-rose-200 text-rose-700 px-3 py-2 rounded-xl text-xs mb-2">
+                        <ul class="list-disc pl-4 space-y-0.5">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+                
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal</label>
                     <input type="date" name="tgl_pengeluaran" x-model="editData.tgl_pengeluaran" 
@@ -148,7 +181,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Keterangan</label>
                     <textarea name="keterangan" x-model="editData.keterangan" rows="2" 
-                              class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required></textarea>
+                              class="w-full text-xs bg-gray-50 border {{ $errors->has('keterangan') ? 'border-red-500' : 'border-border-muted' }} p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required></textarea>
                 </div>
                 <div class="pt-3 flex gap-2">
                     <button type="button" @click="showEdit = false" class="flex-1 border border-border-muted text-gray-700 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-50">Batal</button>

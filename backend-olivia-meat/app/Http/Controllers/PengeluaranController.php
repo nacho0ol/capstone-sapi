@@ -21,9 +21,10 @@ class PengeluaranController extends Controller
         $request->validate([
             'tgl_pengeluaran' => 'required|date',
             'kategori_pengeluaran' => 'required|in:Makan,Pembelian Daging,Operasional,Transportasi,Lain-lain',
-            'nominal' => 'required|integer|min:1000',
+            'nominal' => 'required|integer|min:1001',
             'keterangan' => 'required|string|min:5'
         ], [
+            'nominal.min' => 'Nominal pengeluaran harus lebih dari Rp 1.000.',
             'keterangan.min' => 'Keterangan pengeluaran wajib diisi minimal 5 karakter.',
             'keterangan.required' => 'Kolom keterangan wajib diisi.'
         ]);
@@ -43,14 +44,15 @@ class PengeluaranController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-         'tgl_pengeluaran' => 'required|date',
-         'kategori_pengeluaran' => 'required|in:Makan,Pembelian Daging,Operasional,Transportasi,Lain-lain',
-         'nominal' => 'required|integer|min:1000',
-         'keterangan' => 'required|string|min:5'
-     ], [
-         'keterangan.min' => 'Keterangan pengeluaran wajib diisi minimal 5 karakter.',
-         'keterangan.required' => 'Kolom keterangan wajib diisi.'
-     ]);
+            'tgl_pengeluaran' => 'required|date',
+            'kategori_pengeluaran' => 'required|in:Makan,Pembelian Daging,Operasional,Transportasi,Lain-lain',
+            'nominal' => 'required|integer|min:1001',
+            'keterangan' => 'required|string|min:5'
+        ], [
+            'nominal.min' => 'Nominal pengeluaran harus lebih dari Rp 1.000.',
+            'keterangan.min' => 'Keterangan pengeluaran wajib diisi minimal 5 karakter.',
+            'keterangan.required' => 'Kolom keterangan wajib diisi.'
+        ]);
 
         $pengeluaran = PengeluaranHarian::where('id_pengeluaran', $id)->where('is_deleted', 0)->firstOrFail();
         $pengeluaran->update([
