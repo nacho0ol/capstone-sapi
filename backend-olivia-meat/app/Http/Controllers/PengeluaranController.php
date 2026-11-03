@@ -22,10 +22,10 @@ class PengeluaranController extends Controller
             'tgl_pengeluaran' => 'required|date',
             'kategori_pengeluaran' => 'required|in:Makan,Pembelian Daging,Operasional,Transportasi,Lain-lain',
             'nominal' => 'required|integer|min:1001',
-            'keterangan' => 'required|string|min:5'
+            'keterangan' => 'required|string|min:1' // <-- Diubah ke min:1
         ], [
             'nominal.min' => 'Nominal pengeluaran harus lebih dari Rp 1.000.',
-            'keterangan.min' => 'Keterangan pengeluaran wajib diisi minimal 5 karakter.',
+            'keterangan.min' => 'Keterangan pengeluaran minimal 1 karakter.', // <-- Pesan disesuaikan
             'keterangan.required' => 'Kolom keterangan wajib diisi.'
         ]);
 
@@ -47,10 +47,10 @@ class PengeluaranController extends Controller
             'tgl_pengeluaran' => 'required|date',
             'kategori_pengeluaran' => 'required|in:Makan,Pembelian Daging,Operasional,Transportasi,Lain-lain',
             'nominal' => 'required|integer|min:1001',
-            'keterangan' => 'required|string|min:5'
+            'keterangan' => 'required|string|min:1' 
         ], [
             'nominal.min' => 'Nominal pengeluaran harus lebih dari Rp 1.000.',
-            'keterangan.min' => 'Keterangan pengeluaran wajib diisi minimal 5 karakter.',
+            'keterangan.min' => 'Keterangan pengeluaran minimal 1 karakter.', 
             'keterangan.required' => 'Kolom keterangan wajib diisi.'
         ]);
 

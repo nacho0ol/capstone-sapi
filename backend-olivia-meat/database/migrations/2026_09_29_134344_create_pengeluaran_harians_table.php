@@ -24,7 +24,7 @@ return new class extends Migration
         });
 
         DB::statement("ALTER TABLE pengeluaran_harians ADD CONSTRAINT chk_nominal CHECK (nominal > 1000 AND nominal <= 100000000)");
-        DB::statement("ALTER TABLE pengeluaran_harians ADD CONSTRAINT chk_keterangan CHECK (LENGTH(keterangan) >= 5)");
+        DB::statement("ALTER TABLE pengeluaran_harians ADD CONSTRAINT chk_keterangan CHECK (LENGTH(keterangan) >= 1)");
     }
 
     /**

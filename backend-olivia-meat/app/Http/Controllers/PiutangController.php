@@ -40,7 +40,10 @@ class PiutangController extends Controller
     public function updatePembayaran(Request $request, $id)
     {
         $request->validate([
-            'nominal_bayar' => 'required|integer|min:1'
+            'nominal_bayar' => 'required|integer|min:1000'
+        ], [
+            'nominal_bayar.min' => 'Pembayaran cicilan utang minimal adalah Rp 1.000.',
+            'nominal_bayar.required' => 'Nominal pembayaran wajib diisi.'
         ]);
 
         DB::beginTransaction();
