@@ -4,7 +4,42 @@
 <div x-data="{ 
     showForm: false, 
     showEdit: false, 
-    editData: { id_pengeluaran: '', tgl_pengeluaran: '', kategori_pengeluaran: '', nominal: '', keterangan: '' } 
+    
+    // State Nominal Tambah
+    nominalRaw: '',
+    nominalFormatted: '',
+
+    // State Nominal Edit
+    editData: { id_pengeluaran: '', tgl_pengeluaran: '', kategori_pengeluaran: '', nominal: '', keterangan: '' },
+    editNominalRaw: '',
+    editNominalFormatted: '',
+
+    formatRupiah(val) {
+        let number = String(val).replace(/\D/g, '');
+        if (!number) return { raw: '', formatted: '' };
+        let formatted = new Intl.NumberFormat('id-ID').format(number);
+        return { raw: number, formatted: formatted };
+    },
+
+    onNominalInput(e) {
+        let res = this.formatRupiah(e.target.value);
+        this.nominalRaw = res.raw;
+        this.nominalFormatted = res.formatted;
+    },
+
+    onEditNominalInput(e) {
+        let res = this.formatRupiah(e.target.value);
+        this.editNominalRaw = res.raw;
+        this.editNominalFormatted = res.formatted;
+    },
+
+    openEditModal(pen) {
+        this.editData = pen;
+        let res = this.formatRupiah(pen.nominal);
+        this.editNominalRaw = res.raw;
+        this.editNominalFormatted = res.formatted;
+        this.showEdit = true;
+    }
 }" class="space-y-4">
 
     <!-- Header Halaman -->
@@ -19,14 +54,6 @@
             <span>Tambah</span>
         </button>
     </div>
-
-    <!-- Flash Message Success -->
-    @if(session('success'))
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3.5 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2 shadow-sm">
-            <x-lucide-check-circle-2 class="w-4 h-4 text-emerald-600 flex-shrink-0" />
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
 
     <!-- MODAL TAMBAH PENGELUARAN -->
     <div x-show="showForm" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
@@ -60,8 +87,12 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal (Rp)</label>
-                    <input type="number" name="nominal" min="1000" 
-                           class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" placeholder="Contoh: 50000" required>
+                    <input type="text" 
+                           x-model="nominalFormatted"
+                           @input="onNominalInput($event)"
+                           class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" 
+                           placeholder="Contoh: 50.000" required>
+                    <input type="hidden" name="nominal" :value="nominalRaw">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Keterangan</label>
@@ -108,8 +139,11 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal (Rp)</label>
-                    <input type="number" name="nominal" x-model="editData.nominal" min="1000" 
+                    <input type="text" 
+                           x-model="editNominalFormatted" 
+                           @input="onEditNominalInput($event)"
                            class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
+                    <input type="hidden" name="nominal" :value="editNominalRaw">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Keterangan</label>
@@ -143,7 +177,7 @@
                 </div>
                 
                 <div class="flex justify-end gap-2 border-t border-border-muted pt-3 mt-1">
-                    <button @click="editData = {{ json_encode($pen) }}; showEdit = true;" 
+                    <button @click="openEditModal({{ json_encode($pen) }})" 
                             class="inline-flex items-center gap-1 text-amber-700 font-semibold px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors text-xs">
                         <x-lucide-square-pen class="w-3.5 h-3.5" />
                         <span>Edit</span>
@@ -164,7 +198,6 @@
             <div class="text-center bg-white rounded-2xl border border-border-muted py-12 shadow-sm">
                 <x-lucide-wallet class="w-10 h-10 text-gray-300 mx-auto mb-2" />
                 <p class="text-gray-400 text-xs">Belum ada catatan pengeluaran.</p>
-                <button @click="showForm = true" class="mt-2 text-[#842529] font-bold text-xs hover:underline">Tambah Catatan Pertama</button>
             </div>
         @endforelse
     </div>
