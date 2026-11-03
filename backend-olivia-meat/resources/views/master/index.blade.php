@@ -28,8 +28,26 @@
         <!-- ================= KONTEN TAB PRODUK ================= -->
         <div class="space-y-4">
             
-            <!-- Wrapper Alpine.js untuk Modal Tambah Produk -->
-            <div x-data="{ openAdd: {{ old('form_type') == 'create_produk' && $errors->any() ? 'true' : 'false' }} }">
+            <!-- Wrapper Alpine.js untuk Modal Tambah Produk + Format Ribuan -->
+            <div x-data="{ 
+                openAdd: {{ old('form_type') == 'create_produk' && $errors->any() ? 'true' : 'false' }},
+                hargaAwalRaw: '{{ old('form_type') == 'create_produk' ? old('harga_awal') : '' }}',
+                hargaAwalFormatted: '',
+                hargaJualRaw: '{{ old('form_type') == 'create_produk' ? old('harga_jual') : '' }}',
+                hargaJualFormatted: '',
+
+                formatRupiah(val) {
+                    let number = String(val).replace(/\D/g, '');
+                    if (!number) return { raw: '', formatted: '' };
+                    let formatted = new Intl.NumberFormat('id-ID').format(number);
+                    return { raw: number, formatted: formatted };
+                },
+
+                init() {
+                    if (this.hargaAwalRaw) this.hargaAwalFormatted = this.formatRupiah(this.hargaAwalRaw).formatted;
+                    if (this.hargaJualRaw) this.hargaJualFormatted = this.formatRupiah(this.hargaJualRaw).formatted;
+                }
+            }">
                 <button @click="openAdd = true" 
                         class="w-full sm:w-auto inline-flex justify-center items-center gap-2 bg-[#842529] hover:bg-red-900 text-white text-xs py-2.5 px-4 rounded-xl font-semibold shadow-sm transition-all active:scale-95">
                     <x-lucide-plus-circle class="w-4 h-4 text-white" />
@@ -88,13 +106,21 @@
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-700 mb-1">Harga Awal</label>
-                                    <input type="number" name="harga_awal" value="{{ old('form_type') == 'create_produk' ? old('harga_awal') : '' }}" placeholder="Rp 0" required 
+                                    <input type="text" 
+                                           x-model="hargaAwalFormatted"
+                                           @input="let res = formatRupiah($event.target.value); hargaAwalRaw = res.raw; hargaAwalFormatted = res.formatted;"
+                                           placeholder="Rp 0" required 
                                            class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all">
+                                    <input type="hidden" name="harga_awal" :value="hargaAwalRaw">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-700 mb-1">Harga Jual</label>
-                                    <input type="number" name="harga_jual" value="{{ old('form_type') == 'create_produk' ? old('harga_jual') : '' }}" placeholder="Rp 0" required 
+                                    <input type="text" 
+                                           x-model="hargaJualFormatted"
+                                           @input="let res = formatRupiah($event.target.value); hargaJualRaw = res.raw; hargaJualFormatted = res.formatted;"
+                                           placeholder="Rp 0" required 
                                            class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all">
+                                    <input type="hidden" name="harga_jual" :value="hargaJualRaw">
                                 </div>
                             </div>
 
@@ -117,7 +143,25 @@
             <div class="space-y-2">
                 <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Daftar Produk Terdaftar</h3>
                 @foreach($produk as $p)
-                    <div x-data="{ openEdit: {{ old('id_produk') == $p->id_produk && $errors->any() ? 'true' : 'false' }} }" 
+                    <div x-data="{ 
+                        openEdit: {{ old('id_produk') == $p->id_produk && $errors->any() ? 'true' : 'false' }},
+                        hargaAwalRaw: '{{ old('id_produk') == $p->id_produk ? old('harga_awal') : $p->harga_awal }}',
+                        hargaAwalFormatted: '',
+                        hargaJualRaw: '{{ old('id_produk') == $p->id_produk ? old('harga_jual') : $p->harga_jual }}',
+                        hargaJualFormatted: '',
+
+                        formatRupiah(val) {
+                            let number = String(val).replace(/\D/g, '');
+                            if (!number) return { raw: '', formatted: '' };
+                            let formatted = new Intl.NumberFormat('id-ID').format(number);
+                            return { raw: number, formatted: formatted };
+                        },
+
+                        init() {
+                            if (this.hargaAwalRaw) this.hargaAwalFormatted = this.formatRupiah(this.hargaAwalRaw).formatted;
+                            if (this.hargaJualRaw) this.hargaJualFormatted = this.formatRupiah(this.hargaJualRaw).formatted;
+                        }
+                    }" 
                          class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm hover:border-gray-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         
                         <div class="space-y-1">
@@ -207,13 +251,21 @@
                                     <div class="grid grid-cols-2 gap-2">
                                         <div>
                                             <label class="block text-xs font-semibold text-gray-700 mb-1">Harga Awal</label>
-                                            <input type="number" name="harga_awal" value="{{ old('id_produk') == $p->id_produk ? old('harga_awal') : $p->harga_awal }}" required 
+                                            <input type="text" 
+                                                   x-model="hargaAwalFormatted"
+                                                   @input="let res = formatRupiah($event.target.value); hargaAwalRaw = res.raw; hargaAwalFormatted = res.formatted;"
+                                                   placeholder="Rp 0" required 
                                                    class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all">
+                                            <input type="hidden" name="harga_awal" :value="hargaAwalRaw">
                                         </div>
                                         <div>
                                             <label class="block text-xs font-semibold text-gray-700 mb-1">Harga Jual</label>
-                                            <input type="number" name="harga_jual" value="{{ old('id_produk') == $p->id_produk ? old('harga_jual') : $p->harga_jual }}" required 
+                                            <input type="text" 
+                                                   x-model="hargaJualFormatted"
+                                                   @input="let res = formatRupiah($event.target.value); hargaJualRaw = res.raw; hargaJualFormatted = res.formatted;"
+                                                   placeholder="Rp 0" required 
                                                    class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all">
+                                            <input type="hidden" name="harga_jual" :value="hargaJualRaw">
                                         </div>
                                     </div>
 
@@ -223,7 +275,7 @@
                                                class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all">
                                     </div>
                                     
-                                    <button type="submit" class="w-full bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold text-xs transition-all shadow-md mt-2 flex items-center justify-center gap-2">
+                                    <button type="submit" class="w-full bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold transition-all shadow-md mt-2 flex items-center justify-center gap-2">
                                         <x-lucide-save class="w-4 h-4" />
                                         <span>Simpan Perubahan</span>
                                     </button>
@@ -399,7 +451,7 @@
                                                   class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all">{{ old('id_pelanggan') == $pl->id_pelanggan ? old('alamat') : $pl->alamat }}</textarea>
                                     </div>
                                     
-                                    <button type="submit" class="w-full bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold text-xs transition-all shadow-md mt-2 flex items-center justify-center gap-2">
+                                    <button type="submit" class="w-full bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold transition-all shadow-md mt-2 flex items-center justify-center gap-2">
                                         <x-lucide-save class="w-4 h-4" />
                                         <span>Simpan Perubahan</span>
                                     </button>
