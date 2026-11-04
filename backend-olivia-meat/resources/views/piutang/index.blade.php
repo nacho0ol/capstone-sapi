@@ -1,7 +1,38 @@
 @extends('layouts.app')
 
 @section('content')
-<div x-data="{ showForm: false, selectedId: null, maxBayar: 0, sisaTagihan: 0 }" class="space-y-4">
+<div x-data="{ 
+    showForm: false, 
+    selectedId: null, 
+    maxBayar: 0, 
+    sisaTagihan: 0,
+
+    // State untuk Format Ribuan Nominal Pembayaran
+    nominalRaw: '',
+    nominalFormatted: '',
+
+    formatRupiah(val) {
+        let number = String(val).replace(/\D/g, '');
+        if (!number) return { raw: '', formatted: '' };
+        let formatted = new Intl.NumberFormat('id-ID').format(number);
+        return { raw: number, formatted: formatted };
+    },
+
+    onNominalInput(e) {
+        let res = this.formatRupiah(e.target.value);
+        this.nominalRaw = res.raw;
+        this.nominalFormatted = res.formatted;
+    },
+
+    openBayarModal(id, sisa) {
+        this.selectedId = id;
+        this.maxBayar = sisa;
+        this.sisaTagihan = sisa;
+        this.nominalRaw = '';
+        this.nominalFormatted = '';
+        this.showForm = true;
+    }
+}" class="space-y-4">
     
     <!-- Header Halaman -->
     <div class="flex justify-between items-center">
@@ -32,9 +63,14 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal Pembayaran (Rp)</label>
-                    <input type="number" name="nominal_bayar" min="1" :max="maxBayar" 
-                           class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" 
-                           placeholder="Contoh: 50000" required>
+                    <input type="text" 
+                           x-model="nominalFormatted"
+                           @input="onNominalInput($event)"
+                           class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all" 
+                           placeholder="Contoh: 50.000" required>
+                    
+                    <!-- Hidden input mengirim nominal murni tanpa titik -->
+                    <input type="hidden" name="nominal_bayar" :value="nominalRaw">
                 </div>
 
                 <div class="pt-3 flex gap-2">
@@ -77,7 +113,7 @@
                         <p class="text-gray-500">Jumlah Terbayar: <span class="font-bold text-emerald-700">Rp {{ number_format($p->jumlah_terbayar, 0, ',', '.') }}</span></p>
                     </div>
                     @if($p->status_piutang != 'Lunas')
-                    <button @click="selectedId = '{{ $p->id_pesanan }}'; maxBayar = {{ $p->total_tagihan - $p->jumlah_terbayar }}; sisaTagihan = maxBayar; showForm = true;" 
+                    <button @click="openBayarModal('{{ $p->id_pesanan }}', {{ $p->total_tagihan - $p->jumlah_terbayar }})" 
                             class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-sm transition-all active:scale-95">
                         <x-lucide-banknote class="w-4 h-4 text-white" />
                         <span>Bayar</span>

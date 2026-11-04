@@ -239,29 +239,53 @@
 </div>
 
                             @if(!$isCancelled && $p->metode_bayar == 'Tempo' && $p->status_bayar != 'Lunas' && $p->piutang)
-                                <div class="p-4 bg-sky-50 border-t border-sky-200 space-y-2">
-                                    <h4 class="text-xs font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1.5">
-                                        <x-lucide-credit-card class="w-4 h-4 text-sky-700" />
-                                        <span>Update Pembayaran Piutang Direct</span>
-                                    </h4>
-                                    
-                                    <div class="flex justify-between text-xs text-sky-800">
-                                        <span>Telah Dibayar: <strong>Rp {{ number_format($p->piutang->jumlah_terbayar, 0, ',', '.') }}</strong></span>
-                                        <span>Sisa Tagihan: <strong class="text-[#842529]">Rp {{ number_format($p->piutang->total_tagihan - $p->piutang->jumlah_terbayar, 0, ',', '.') }}</strong></span>
-                                    </div>
+    <div class="p-4 bg-sky-50 border-t border-sky-200 space-y-2">
+        <h4 class="text-xs font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1.5">
+            <x-lucide-credit-card class="w-4 h-4 text-sky-700" />
+            <span>Update Pembayaran Piutang Direct</span>
+        </h4>
+        
+        <div class="flex justify-between text-xs text-sky-800">
+            <span>Telah Dibayar: <strong>Rp {{ number_format($p->piutang->jumlah_terbayar, 0, ',', '.') }}</strong></span>
+            <span>Sisa Tagihan: <strong class="text-[#842529]">Rp {{ number_format($p->piutang->total_tagihan - $p->piutang->jumlah_terbayar, 0, ',', '.') }}</strong></span>
+        </div>
 
-                                    <form action="{{ route('piutang.bayar', $p->id_pesanan) }}" method="POST" class="flex gap-2 pt-1">
-                                        @csrf
-                                        <input type="number" name="nominal_bayar" min="1" max="{{ $p->piutang->total_tagihan - $p->piutang->jumlah_terbayar }}" 
-                                               class="flex-1 bg-white border border-sky-300 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500" 
-                                               placeholder="Masukkan nominal bayar..." required>
-                                        <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow transition-colors flex items-center gap-1">
-                                            <x-lucide-check-check class="w-4 h-4" />
-                                            <span>Bayar</span>
-                                        </button>
-                                    </form>
-                                </div>
-                            @endif
+        <form action="{{ route('piutang.bayar', $p->id_pesanan) }}" method="POST" 
+              x-data="{
+                  nominalRaw: '',
+                  nominalFormatted: '',
+                  formatRupiah(val) {
+                      let number = String(val).replace(/\D/g, '');
+                      if (!number) return { raw: '', formatted: '' };
+                      let formatted = new Intl.NumberFormat('id-ID').format(number);
+                      return { raw: number, formatted: formatted };
+                  }
+              }" 
+              class="flex gap-2 pt-1">
+            @csrf
+            <div class="flex-1">
+                <input type="text" 
+                       :value="nominalFormatted"
+                       @input="
+                           let res = formatRupiah($event.target.value); 
+                           nominalRaw = res.raw; 
+                           nominalFormatted = res.formatted;
+                           $event.target.value = res.formatted;
+                       "
+                       class="w-full bg-white border border-sky-300 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all" 
+                       placeholder="Masukkan nominal bayar..." required>
+                
+                <!-- Hidden input mengirim nominal murni ke database -->
+                <input type="hidden" name="nominal_bayar" :value="nominalRaw">
+            </div>
+
+            <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow transition-colors flex items-center gap-1 active:scale-95">
+                <x-lucide-check-check class="w-4 h-4" />
+                <span>Bayar</span>
+            </button>
+        </form>
+    </div>
+@endif
                         </div>
                     </div>
                 </div>
