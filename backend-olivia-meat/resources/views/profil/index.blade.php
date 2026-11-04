@@ -1,69 +1,123 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-5">
+<div x-data="{ isEditing: {{ $errors->any() ? 'true' : 'false' }} }" class="space-y-4 max-w-2xl mx-auto">
+    
     <!-- Header Halaman -->
     <div>
         <h1 class="text-xl font-bold text-gray-900">Pengaturan Profil</h1>
         <p class="text-xs text-gray-500 mt-0.5">Kelola informasi akun dan data pengguna</p>
     </div>
 
-    <!-- Ringkasan Informasi Akun -->
-    <div class="bg-white p-4 rounded-2xl border border-border-muted shadow-sm flex items-center gap-3">
-        <div class="w-12 h-12 bg-[#FAE2E2] rounded-2xl flex items-center justify-center text-[#842529] flex-shrink-0">
-            <x-lucide-user class="w-6 h-6" />
+    <!-- CARD UTAMA: INFO USER HEADER -->
+    <div class="bg-white border border-border-muted rounded-2xl p-5 shadow-sm flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-rose-100 text-[#842529] rounded-full flex items-center justify-center font-bold text-xl border border-rose-200">
+                <x-lucide-user class="w-7 h-7" />
+            </div>
+            <div class="space-y-1">
+                <h2 class="text-base font-bold text-gray-900">
+                    {{ auth()->user()->nama_user ?? auth()->user()->nama ?? auth()->user()->name ?? 'Admin Olivia' }}
+                </h2>
+                
+                <!-- BADGE USERNAME (Menggantikan Badge Role) -->
+                <div class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-200">
+                    <x-lucide-at-sign class="w-3 h-3 text-sky-600" />
+                    <span>{{ auth()->user()->username ?? 'admin' }}</span>
+                </div>
+            </div>
         </div>
-        <div class="overflow-hidden">
-            <h2 class="font-bold text-gray-900 text-sm truncate">{{ $user->nama }}</h2>
-            <p class="text-xs text-gray-500 font-mono">@<span>{{ $user->username }}</span></p>
-            <span class="inline-flex items-center gap-1 text-[10px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded-md border border-emerald-200 mt-1">
-                <x-lucide-shield-check class="w-3 h-3 text-emerald-600" />
-                <span>Administrator / Kasir</span>
-            </span>
+
+        <!-- Tombol Trigger Edit (Hanya Muncul Saat View Mode) -->
+        <button x-show="!isEditing" 
+                @click="isEditing = true" 
+                class="inline-flex items-center gap-1.5 bg-[#842529] hover:bg-red-900 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95">
+            <x-lucide-square-pen class="w-4 h-4" />
+            <span>Edit Profil</span>
+        </button>
+    </div>
+
+    <!-- 1. TAMPILAN VIEW PROFIL (DEFAULT READ-ONLY) -->
+    <div x-show="!isEditing" x-cloak class="bg-white border border-border-muted rounded-2xl p-5 shadow-sm space-y-4">
+        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-border-muted pb-3 flex items-center gap-1.5">
+            <x-lucide-user-check class="w-4 h-4 text-[#842529]" />
+            <span>Informasi Detail Akun</span>
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <div class="bg-gray-50 border border-border-muted p-3.5 rounded-xl space-y-1">
+                <span class="text-gray-400 font-medium">Nama Lengkap</span>
+                <p class="font-bold text-gray-900 text-sm">
+                    {{ auth()->user()->nama_user ?? auth()->user()->nama ?? auth()->user()->name ?? 'Admin Olivia' }}
+                </p>
+            </div>
+            <div class="bg-gray-50 border border-border-muted p-3.5 rounded-xl space-y-1">
+                <span class="text-gray-400 font-medium">Username</span>
+                <p class="font-bold text-gray-900 text-sm">
+                    @ {{ auth()->user()->username ?? 'admin' }}
+                </p>
+            </div>
         </div>
     </div>
 
-    <!-- Form Update Data Profil -->
-    <div class="bg-white p-5 rounded-2xl border border-border-muted shadow-sm space-y-4">
-        <h3 class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-2 border-b border-border-muted pb-3">
+    <!-- 2. TAMPILAN EDIT PROFIL (MUNCUL KETIKA DIKLIK EDIT) -->
+    <div x-show="isEditing" x-cloak class="bg-white border border-border-muted rounded-2xl p-5 shadow-sm space-y-4">
+        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-border-muted pb-3 flex items-center gap-1.5">
             <x-lucide-user-cog class="w-4 h-4 text-[#842529]" />
             <span>Update Data Profil</span>
         </h3>
 
+        @if ($errors->any())
+            <div class="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-xl text-xs space-y-1">
+                @foreach ($errors->all() as $error)
+                    <p class="font-medium">• {{ $error }}</p>
+                @endforeach
+            </div>
+        @endif
+
         <form action="{{ route('profil.update') }}" method="POST" class="space-y-3">
             @csrf
             @method('PUT')
-            
+
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Lengkap</label>
-                <input type="text" name="nama" value="{{ old('nama', $user->nama) }}" required 
-                       class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all">
+                <input type="text" 
+                       name="nama_user" 
+                       value="{{ old('nama_user', auth()->user()->nama_user ?? auth()->user()->nama ?? auth()->user()->name) }}" 
+                       class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all" required>
             </div>
 
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Username</label>
-                <input type="text" name="username" value="{{ old('username', $user->username) }}" required 
-                       class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all">
+                <input type="text" 
+                       name="username" 
+                       value="{{ old('username', auth()->user()->username) }}" 
+                       class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all" required>
             </div>
 
-            <button type="submit" 
-                    class="w-full bg-[#842529] hover:bg-red-900 text-white text-xs py-2.5 rounded-xl font-bold transition-all shadow-md mt-2 flex items-center justify-center gap-2 active:scale-95">
-                <x-lucide-save class="w-4 h-4" />
-                <span>Simpan Perubahan</span>
-            </button>
+            <div class="pt-2 flex gap-2">
+                <button type="button" 
+                        @click="isEditing = false" 
+                        class="flex-1 border border-border-muted text-gray-700 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-50 transition-colors">
+                    Batal
+                </button>
+                <button type="submit" 
+                        class="flex-1 bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold text-xs shadow-md transition-all active:scale-95">
+                    Simpan Perubahan
+                </button>
+            </div>
         </form>
     </div>
 
-    <!-- Tombol Logout -->
-    <div class="pt-2">
-        <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin keluar dari sistem?');">
-            @csrf
-            <button type="submit" 
-                    class="w-full flex items-center justify-center gap-2 bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 hover:border-rose-300 py-3 rounded-2xl text-xs font-bold transition-all shadow-sm active:scale-95">
-                <x-lucide-log-out class="w-4 h-4" />
-                <span>Logout dari Sistem</span>
-            </button>
-        </form>
-    </div>
+    <!-- BUTTON LOGOUT -->
+    <form action="{{ route('logout') }}" method="POST" class="pt-2">
+        @csrf
+        <button type="submit" 
+                class="w-full bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-bold py-3 rounded-2xl text-xs transition-colors flex items-center justify-center gap-2 active:scale-98">
+            <x-lucide-log-out class="w-4 h-4" />
+            <span>Logout dari Sistem</span>
+        </button>
+    </form>
+
 </div>
 @endsection
