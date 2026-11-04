@@ -9,7 +9,30 @@
     items: {{ Js::from(old('items', [['id_produk' => '', 'qty' => 1]])) }}, 
     produks: {{ Js::from($produks) }}, 
     pelanggans: {{ Js::from($pelanggans) }}, 
-    newPelanggan: {nama_pelanggan: '', no_telp: '', alamat: ''} 
+    newPelanggan: {nama_pelanggan: '', no_telp: '', alamat: ''},
+
+    // Format Ribuan DP / Awal
+    dpRaw: '{{ old('jumlah_terbayar', 0) }}',
+    dpFormatted: '',
+
+    formatRupiah(val) {
+        let number = String(val).replace(/\D/g, '');
+        if (!number) return { raw: '', formatted: '' };
+        let formatted = new Intl.NumberFormat('id-ID').format(number);
+        return { raw: number, formatted: formatted };
+    },
+
+    onDpInput(e) {
+        let res = this.formatRupiah(e.target.value);
+        this.dpRaw = res.raw;
+        this.dpFormatted = res.formatted;
+    },
+
+    init() {
+        if (this.dpRaw && this.dpRaw != '0') {
+            this.dpFormatted = this.formatRupiah(this.dpRaw).formatted;
+        }
+    }
 }" class="space-y-4">
 
     <!-- Header Halaman -->
@@ -96,7 +119,7 @@
                     </select>
                 </div>
 
-                <!-- Box Tempo & Piutang -->
+                <!-- Box Tempo & Piutang dengan Format Ribuan Titik -->
                 <div x-show="metodeBayar === 'Tempo'" x-cloak class="bg-sky-50 border border-sky-200 p-3 rounded-xl space-y-2" x-transition>
                     <h4 class="text-[11px] font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1">
                         <x-lucide-receipt class="w-3.5 h-3.5 text-sky-700" />
@@ -110,8 +133,12 @@
                         </div>
                         <div>
                             <label class="block text-[10px] text-sky-800 font-semibold mb-1">DP / Awal (Rp)</label>
-                            <input type="number" name="jumlah_terbayar" value="{{ old('jumlah_terbayar', 0) }}" min="0" 
+                            <input type="text" 
+                                   x-model="dpFormatted" 
+                                   @input="onDpInput($event)" 
+                                   placeholder="0" 
                                    class="w-full text-xs bg-white border border-sky-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <input type="hidden" name="jumlah_terbayar" :value="dpRaw">
                         </div>
                     </div>
                 </div>
@@ -293,13 +320,20 @@
                                 <span>Edit</span>
                             </a>
 
-                            <form action="{{ route('transaksi.cancel', $p->id_pesanan) }}" method="POST" onsubmit="return confirm('Batalkan pesanan ini?');">
-                                @csrf
-                                <button type="submit" class="inline-flex items-center justify-center gap-1 text-[10px] bg-rose-50 text-rose-700 hover:bg-rose-100 px-2.5 py-1.5 rounded-xl font-bold w-full text-center border border-rose-200 transition-colors">
-                                    <x-lucide-x-circle class="w-3.5 h-3.5" />
-                                    <span>Batal</span>
-                                </button>
-                            </form>
+                            <!-- Tombol Batal Menggunakan Global Dynamic Confirm Modal -->
+                            <button type="button" 
+                                    @click="$dispatch('confirm-action', { 
+                                        action: '{{ route('transaksi.cancel', $p->id_pesanan) }}', 
+                                        title: 'Batalkan Pesanan', 
+                                        message: 'Apakah Anda yakin ingin membatalkan pesanan #{{ $p->id_pesanan }}?', 
+                                        method: 'POST',
+                                        confirmText: 'Ya, Batalkan',
+                                        confirmClass: 'bg-rose-600 hover:bg-rose-700'
+                                    })"
+                                    class="inline-flex items-center justify-center gap-1 text-[10px] bg-rose-50 text-rose-700 hover:bg-rose-100 px-2.5 py-1.5 rounded-xl font-bold w-full text-center border border-rose-200 transition-colors">
+                                <x-lucide-x-circle class="w-3.5 h-3.5" />
+                                <span>Batal</span>
+                            </button>
                         </div>
                     @elseif($isCancelled)
                         <span class="inline-flex items-center justify-center gap-1 text-[10px] bg-gray-100 text-gray-400 px-2.5 py-1.5 rounded-xl font-bold w-full text-center border border-gray-200 cursor-not-allowed" title="Pesanan sudah dibatalkan">
