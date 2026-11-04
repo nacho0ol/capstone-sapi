@@ -43,17 +43,23 @@
 }" class="space-y-4">
 
     <!-- Header Halaman -->
-    <div class="flex justify-between items-center">
+<div class="flex justify-between items-center">
+    <div class="flex items-center gap-3">
+        <a href="{{ route('keuangan.index') }}" 
+           class="p-2 bg-white border border-border-muted rounded-xl text-gray-600 hover:text-[#842529] hover:border-[#842529] hover:bg-gray-50 transition-all shadow-sm">
+            <x-lucide-arrow-left class="w-5 h-5" />
+        </a>
         <div>
             <h1 class="text-xl font-bold text-gray-900">Catatan Pengeluaran Harian</h1>
             <p class="text-xs text-gray-500 mt-0.5">Pencatatan dan pemantauan pengeluaran operasional toko</p>
         </div>
-        <button @click="showForm = true" 
-                class="inline-flex items-center gap-1.5 bg-[#842529] hover:bg-red-900 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95">
-            <x-lucide-plus-circle class="w-4 h-4 text-white" />
-            <span>Tambah</span>
-        </button>
     </div>
+    <button @click="showForm = true" 
+            class="inline-flex items-center gap-1.5 bg-[#842529] hover:bg-red-900 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95">
+        <x-lucide-plus class="w-4 h-4 text-white" />
+        <span>Tambah</span>
+    </button>
+</div>
 
     <!-- Flash Message Success -->
     @if(session('success'))

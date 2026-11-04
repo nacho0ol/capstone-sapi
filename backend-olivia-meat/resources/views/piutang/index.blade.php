@@ -35,12 +35,18 @@
 }" class="space-y-4">
     
     <!-- Header Halaman -->
-    <div class="flex justify-between items-center">
+<div class="flex justify-between items-center">
+    <div class="flex items-center gap-3">
+        <a href="{{ route('keuangan.index') }}" 
+           class="p-2 bg-white border border-border-muted rounded-xl text-gray-600 hover:text-[#842529] hover:border-[#842529] hover:bg-gray-50 transition-all shadow-sm">
+            <x-lucide-arrow-left class="w-5 h-5" />
+        </a>
         <div>
             <h1 class="text-xl font-bold text-gray-900">Monitoring Piutang Pelanggan</h1>
             <p class="text-xs text-gray-500 mt-0.5">Pantau status tagihan tempo dan pencatatan cicilan</p>
         </div>
     </div>
+</div>
 
     <!-- MODAL PEMBAYARAN CICILAN -->
     <div x-show="showForm" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
