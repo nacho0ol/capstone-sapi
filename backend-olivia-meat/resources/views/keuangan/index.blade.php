@@ -209,26 +209,34 @@
 
                             <!-- Tombol Edit & Batalkan Pesanan -->
                             <div class="px-4 py-3 border-t border-border-muted bg-white flex items-center gap-2">
-                                @if(!$isCancelled && !$isCompleted)
-                                    <a href="{{ route('transaksi.edit', $p->id_pesanan) }}" 
-                                       class="flex-1 inline-flex items-center justify-center gap-1.5 text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 py-2.5 px-3 rounded-xl font-bold border border-amber-200 transition-colors">
-                                        <x-lucide-square-pen class="w-4 h-4" />
-                                        <span>Edit Pesanan</span>
-                                    </a>
-                                    <form action="{{ route('transaksi.cancel', $p->id_pesanan) }}" method="POST" class="flex-1" onsubmit="return confirm('Batalkan pesanan ini?');">
-                                        @csrf
-                                        <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 py-2.5 px-3 rounded-xl font-bold border border-rose-200 transition-colors">
-                                            <x-lucide-x-circle class="w-4 h-4" />
-                                            <span>Batalkan Pesanan</span>
-                                        </button>
-                                    </form>
-                                @elseif($isCancelled)
-                                    <div class="w-full inline-flex items-center justify-center gap-1.5 text-xs bg-gray-100 text-gray-500 py-2.5 px-3 rounded-xl font-bold border border-gray-200 cursor-not-allowed">
-                                        <x-lucide-ban class="w-4 h-4" />
-                                        <span>Pesanan Sudah Dibatalkan</span>
-                                    </div>
-                                @endif
-                            </div>
+    @if(!$isCancelled && !$isCompleted)
+        <a href="{{ route('transaksi.edit', $p->id_pesanan) }}" 
+           class="flex-1 inline-flex items-center justify-center gap-1.5 text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 py-2.5 px-3 rounded-xl font-bold border border-amber-200 transition-colors">
+            <x-lucide-square-pen class="w-4 h-4" />
+            <span>Edit Pesanan</span>
+        </a>
+
+        <!-- Tombol Batalkan Pesanan (Custom Modal Confirmation) -->
+        <button type="button" 
+                @click="$dispatch('confirm-action', { 
+                    action: '{{ route('transaksi.cancel', $p->id_pesanan) }}', 
+                    title: 'Batalkan Pesanan', 
+                    message: 'Apakah Anda yakin ingin membatalkan pesanan #{{ $p->id_pesanan }}?', 
+                    method: 'POST',
+                    confirmText: 'Ya, Batalkan',
+                    confirmClass: 'bg-rose-600 hover:bg-rose-700'
+                })"
+                class="flex-1 inline-flex items-center justify-center gap-1.5 text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 py-2.5 px-3 rounded-xl font-bold border border-rose-200 transition-colors">
+            <x-lucide-x-circle class="w-4 h-4" />
+            <span>Batalkan Pesanan</span>
+        </button>
+    @elseif($isCancelled)
+        <div class="w-full inline-flex items-center justify-center gap-1.5 text-xs bg-gray-100 text-gray-500 py-2.5 px-3 rounded-xl font-bold border border-gray-200 cursor-not-allowed">
+            <x-lucide-ban class="w-4 h-4" />
+            <span>Pesanan Sudah Dibatalkan</span>
+        </div>
+    @endif
+</div>
 
                             @if(!$isCancelled && $p->metode_bayar == 'Tempo' && $p->status_bayar != 'Lunas' && $p->piutang)
                                 <div class="p-4 bg-sky-50 border-t border-sky-200 space-y-2">
@@ -329,11 +337,20 @@
                             <form action="{{ url('/pengeluaran/' . $pen->id_pengeluaran) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus catatan pengeluaran ini?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" 
-                                        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
-                                    <x-lucide-trash-2 class="w-3.5 h-3.5" />
-                                    <span>Hapus</span>
-                                </button>
+                                <!-- Tombol Hapus Pengeluaran Kustom -->
+<button type="button" 
+        @click="$dispatch('confirm-action', { 
+            action: '{{ route('pengeluaran.destroy', $pen->id_pengeluaran) }}', 
+            title: 'Hapus Pengeluaran', 
+            message: 'Apakah Anda yakin ingin menghapus catatan pengeluaran ini?', 
+            method: 'DELETE',
+            confirmText: 'Ya, Hapus',
+            confirmClass: 'bg-rose-600 hover:bg-rose-700'
+        })"
+        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
+    <x-lucide-trash-2 class="w-3.5 h-3.5" />
+    <span>Hapus</span>
+</button>
                             </form>
                         </div>
                     </div>

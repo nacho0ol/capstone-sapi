@@ -219,11 +219,19 @@
                     <form action="{{ route('pengeluaran.destroy', $pen->id_pengeluaran) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus catatan pengeluaran ini?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" 
-                                class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
-                            <x-lucide-trash-2 class="w-3.5 h-3.5" />
-                            <span>Hapus</span>
-                        </button>
+                        <button type="button"
+        @click="$dispatch('confirm-action', { 
+            action: '{{ route('transaksi.destroy', $p->id_pesanan) }}', 
+            title: 'Hapus Pesanan', 
+            message: 'Yakin ingin menghapus pesanan #{{ $p->id_pesanan }}?', 
+            method: 'DELETE',
+            confirmText: 'Ya, Hapus',
+            confirmClass: 'bg-rose-600 hover:bg-rose-700'
+        })"
+        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
+    <x-lucide-trash-2 class="w-3.5 h-3.5" />
+    <span>Hapus</span>
+</button>
                     </form>
                 </div>
             </div>

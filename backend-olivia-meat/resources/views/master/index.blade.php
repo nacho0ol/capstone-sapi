@@ -190,11 +190,20 @@
                             <form action="{{ route('master.produk.delete', $p->id_produk) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" 
-                                        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
-                                    <x-lucide-trash-2 class="w-3.5 h-3.5" />
-                                    <span>Hapus</span>
-                                </button>
+                                <!-- Tombol Hapus Produk Kustom -->
+<button type="button" 
+        @click="$dispatch('confirm-action', { 
+            action: '{{ route('master.produk.delete', $p->id_produk) }}', 
+            title: 'Hapus Produk', 
+            message: 'Apakah Anda yakin ingin menghapus {{ $p->nama_produk }}?', 
+            method: 'DELETE',
+            confirmText: 'Ya, Hapus',
+            confirmClass: 'bg-rose-600 hover:bg-rose-700'
+        })"
+        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
+    <x-lucide-trash-2 class="w-3.5 h-3.5" />
+    <span>Hapus</span>
+</button>
                             </form>
                         </div>
 
@@ -393,11 +402,20 @@
                             <form action="{{ route('master.pelanggan.delete', $pl->id_pelanggan) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus pelanggan ini?')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" 
-                                        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
-                                    <x-lucide-trash-2 class="w-3.5 h-3.5" />
-                                    <span>Hapus</span>
-                                </button>
+                                <!-- Tombol Hapus Pelanggan Kustom -->
+<button type="button" 
+        @click="$dispatch('confirm-action', { 
+            action: '{{ route('master.pelanggan.delete', $pl->id_pelanggan) }}', 
+            title: 'Hapus Pelanggan', 
+            message: 'Apakah Anda yakin ingin menghapus pelanggan {{ $pl->nama_pelanggan }}?', 
+            method: 'DELETE',
+            confirmText: 'Ya, Hapus',
+            confirmClass: 'bg-rose-600 hover:bg-rose-700'
+        })"
+        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
+    <x-lucide-trash-2 class="w-3.5 h-3.5" />
+    <span>Hapus</span>
+</button>
                             </form>
                         </div>
 

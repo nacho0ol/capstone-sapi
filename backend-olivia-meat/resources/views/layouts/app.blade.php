@@ -205,5 +205,51 @@
 
     </div>
 
+    <!-- GLOBAL DYNAMIC CONFIRMATION MODAL -->
+<div x-data="{ 
+        open: false, 
+        actionUrl: '', 
+        title: 'Konfirmasi',
+        message: '',
+        method: 'POST',
+        confirmText: 'Ya, Lanjutkan',
+        confirmClass: 'bg-rose-600 hover:bg-rose-700'
+    }"
+    @confirm-action.window="
+        actionUrl = $event.detail.action;
+        title = $event.detail.title || 'Konfirmasi';
+        message = $event.detail.message || 'Apakah Anda yakin ingin melanjutkan?';
+        method = $event.detail.method || 'POST';
+        confirmText = $event.detail.confirmText || 'Ya, Lanjutkan';
+        confirmClass = $event.detail.confirmClass || 'bg-rose-600 hover:bg-rose-700';
+        open = true;
+    "
+    x-show="open" 
+    x-cloak 
+    style="display: none;" 
+    class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    
+    <div @click.away="open = false" class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-5 border border-border-muted text-center space-y-4">
+        <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+            <x-lucide-alert-triangle class="w-6 h-6" />
+        </div>
+        <div>
+            <h3 class="text-base font-bold text-gray-900" x-text="title"></h3>
+            <p class="text-xs text-gray-500 mt-1 leading-relaxed" x-text="message"></p>
+        </div>
+        <form :action="actionUrl" method="POST" class="flex gap-2 pt-2">
+            @csrf
+            <template x-if="method !== 'POST'">
+                <input type="hidden" name="_method" :value="method">
+            </template>
+            <button type="button" @click="open = false" class="flex-1 border border-border-muted text-gray-700 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-50 transition-colors">
+                Batal
+            </button>
+            <button type="submit" :class="confirmClass" class="flex-1 text-white py-2.5 rounded-xl font-bold text-xs shadow-md transition-all active:scale-95" x-text="confirmText">
+            </button>
+        </form>
+    </div>
+</div>
+
 </body>
 </html>
