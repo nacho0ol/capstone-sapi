@@ -87,6 +87,38 @@
     <!-- ================= ISI TAB 2: DAFTAR PESANAN ================= -->
     @elseif($tab == 'riwayat')
         <div class="space-y-3">
+            
+            <!-- FORM PENCARIAN PESANAN -->
+            <form action="{{ route('keuangan.index') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-2 mb-4">
+                <input type="hidden" name="tab" value="riwayat"> 
+                
+                <div class="relative w-full sm:flex-1">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <x-lucide-search class="w-4 h-4" />
+                    </span>
+                    <input type="text" 
+                           name="search_pesanan" 
+                           value="{{ request('search_pesanan') }}" 
+                           placeholder="Cari No. Nota, nama pelanggan, atau status bayar..." 
+                           class="w-full pl-9 pr-4 py-2.5 bg-white border border-border-muted rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button type="submit" class="w-full sm:w-auto bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                        <x-lucide-search class="w-3.5 h-3.5" />
+                        <span>Cari</span>
+                    </button>
+
+                    @if(request()->filled('search_pesanan'))
+                        <a href="{{ route('keuangan.index', ['tab' => 'riwayat']) }}" 
+                           class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-3 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-1">
+                            <x-lucide-rotate-ccw class="w-3.5 h-3.5" />
+                            <span>Reset</span>
+                        </a>
+                    @endif
+                </div>
+            </form>
+
             @foreach($pesanan as $p)
                 @php
                     $statusLower = strtolower($p->status_pemesanan);
@@ -209,83 +241,82 @@
 
                             <!-- Tombol Edit & Batalkan Pesanan -->
                             <div class="px-4 py-3 border-t border-border-muted bg-white flex items-center gap-2">
-    @if(!$isCancelled && !$isCompleted)
-        <a href="{{ route('transaksi.edit', $p->id_pesanan) }}" 
-           class="flex-1 inline-flex items-center justify-center gap-1.5 text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 py-2.5 px-3 rounded-xl font-bold border border-amber-200 transition-colors">
-            <x-lucide-square-pen class="w-4 h-4" />
-            <span>Edit Pesanan</span>
-        </a>
+                                @if(!$isCancelled && !$isCompleted)
+                                    <a href="{{ route('transaksi.edit', $p->id_pesanan) }}" 
+                                       class="flex-1 inline-flex items-center justify-center gap-1.5 text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 py-2.5 px-3 rounded-xl font-bold border border-amber-200 transition-colors">
+                                        <x-lucide-square-pen class="w-4 h-4" />
+                                        <span>Edit Pesanan</span>
+                                    </a>
 
-        <!-- Tombol Batalkan Pesanan (Custom Modal Confirmation) -->
-        <button type="button" 
-                @click="$dispatch('confirm-action', { 
-                    action: '{{ route('transaksi.cancel', $p->id_pesanan) }}', 
-                    title: 'Batalkan Pesanan', 
-                    message: 'Apakah Anda yakin ingin membatalkan pesanan #{{ $p->id_pesanan }}?', 
-                    method: 'POST',
-                    confirmText: 'Ya, Batalkan',
-                    confirmClass: 'bg-rose-600 hover:bg-rose-700'
-                })"
-                class="flex-1 inline-flex items-center justify-center gap-1.5 text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 py-2.5 px-3 rounded-xl font-bold border border-rose-200 transition-colors">
-            <x-lucide-x-circle class="w-4 h-4" />
-            <span>Batalkan Pesanan</span>
-        </button>
-    @elseif($isCancelled)
-        <div class="w-full inline-flex items-center justify-center gap-1.5 text-xs bg-gray-100 text-gray-500 py-2.5 px-3 rounded-xl font-bold border border-gray-200 cursor-not-allowed">
-            <x-lucide-ban class="w-4 h-4" />
-            <span>Pesanan Sudah Dibatalkan</span>
-        </div>
-    @endif
-</div>
+                                    <button type="button" 
+                                            @click="$dispatch('confirm-action', { 
+                                                action: '{{ route('transaksi.cancel', $p->id_pesanan) }}', 
+                                                title: 'Batalkan Pesanan', 
+                                                message: 'Apakah Anda yakin ingin membatalkan pesanan #{{ $p->id_pesanan }}?', 
+                                                method: 'POST',
+                                                confirmText: 'Ya, Batalkan',
+                                                confirmClass: 'bg-rose-600 hover:bg-rose-700'
+                                            })"
+                                            class="flex-1 inline-flex items-center justify-center gap-1.5 text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 py-2.5 px-3 rounded-xl font-bold border border-rose-200 transition-colors">
+                                        <x-lucide-x-circle class="w-4 h-4" />
+                                        <span>Batalkan Pesanan</span>
+                                    </button>
+                                @elseif($isCancelled)
+                                    <div class="w-full inline-flex items-center justify-center gap-1.5 text-xs bg-gray-100 text-gray-500 py-2.5 px-3 rounded-xl font-bold border border-gray-200 cursor-not-allowed">
+                                        <x-lucide-ban class="w-4 h-4" />
+                                        <span>Pesanan Sudah Dibatalkan</span>
+                                    </div>
+                                @endif
+                            </div>
 
                             @if(!$isCancelled && $p->metode_bayar == 'Tempo' && $p->status_bayar != 'Lunas' && $p->piutang)
-    <div class="p-4 bg-sky-50 border-t border-sky-200 space-y-2">
-        <h4 class="text-xs font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1.5">
-            <x-lucide-credit-card class="w-4 h-4 text-sky-700" />
-            <span>Update Pembayaran Piutang Direct</span>
-        </h4>
-        
-        <div class="flex justify-between text-xs text-sky-800">
-            <span>Telah Dibayar: <strong>Rp {{ number_format($p->piutang->jumlah_terbayar, 0, ',', '.') }}</strong></span>
-            <span>Sisa Tagihan: <strong class="text-[#842529]">Rp {{ number_format($p->piutang->total_tagihan - $p->piutang->jumlah_terbayar, 0, ',', '.') }}</strong></span>
-        </div>
+                                <div class="p-4 bg-sky-50 border-t border-sky-200 space-y-2">
+                                    <h4 class="text-xs font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1.5">
+                                        <x-lucide-credit-card class="w-4 h-4 text-sky-700" />
+                                        <span>Update Pembayaran Piutang Direct</span>
+                                    </h4>
+                                    
+                                    <div class="flex justify-between text-xs text-sky-800">
+                                        <span>Telah Dibayar: <strong>Rp {{ number_format($p->piutang->jumlah_terbayar, 0, ',', '.') }}</strong></span>
+                                        <span>Sisa Tagihan: <strong class="text-[#842529]">Rp {{ number_format($p->piutang->total_tagihan - $p->piutang->jumlah_terbayar, 0, ',', '.') }}</strong></span>
+                                    </div>
 
-        <form action="{{ route('piutang.bayar', $p->id_pesanan) }}" method="POST" 
-              x-data="{
-                  nominalRaw: '',
-                  nominalFormatted: '',
-                  formatRupiah(val) {
-                      let number = String(val).replace(/\D/g, '');
-                      if (!number) return { raw: '', formatted: '' };
-                      let formatted = new Intl.NumberFormat('id-ID').format(number);
-                      return { raw: number, formatted: formatted };
-                  }
-              }" 
-              class="flex gap-2 pt-1">
-            @csrf
-            <div class="flex-1">
-                <input type="text" 
-                       :value="nominalFormatted"
-                       @input="
-                           let res = formatRupiah($event.target.value); 
-                           nominalRaw = res.raw; 
-                           nominalFormatted = res.formatted;
-                           $event.target.value = res.formatted;
-                       "
-                       class="w-full bg-white border border-sky-300 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all" 
-                       placeholder="Masukkan nominal bayar..." required>
-                
-                <!-- Hidden input mengirim nominal murni ke database -->
-                <input type="hidden" name="nominal_bayar" :value="nominalRaw">
-            </div>
+                                    <form action="{{ route('piutang.bayar', $p->id_pesanan) }}" method="POST" 
+                                          x-data="{
+                                              nominalRaw: '',
+                                              nominalFormatted: '',
+                                              formatRupiah(val) {
+                                                  let number = String(val).replace(/\D/g, '');
+                                                  if (!number) return { raw: '', formatted: '' };
+                                                  let formatted = new Intl.NumberFormat('id-ID').format(number);
+                                                  return { raw: number, formatted: formatted };
+                                              }
+                                          }" 
+                                          class="flex gap-2 pt-1">
+                                        @csrf
+                                        <div class="flex-1">
+                                            <input type="text" 
+                                                   :value="nominalFormatted"
+                                                   @input="
+                                                       let res = formatRupiah($event.target.value); 
+                                                       nominalRaw = res.raw; 
+                                                       nominalFormatted = res.formatted;
+                                                       $event.target.value = res.formatted;
+                                                   "
+                                                   class="w-full bg-white border border-sky-300 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all" 
+                                                   placeholder="Masukkan nominal bayar..." required>
+                                            
+                                            <!-- Hidden input mengirim nominal murni ke database -->
+                                            <input type="hidden" name="nominal_bayar" :value="nominalRaw">
+                                        </div>
 
-            <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow transition-colors flex items-center gap-1 active:scale-95">
-                <x-lucide-check-check class="w-4 h-4" />
-                <span>Bayar</span>
-            </button>
-        </form>
-    </div>
-@endif
+                                        <button type="submit" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow transition-colors flex items-center gap-1 active:scale-95">
+                                            <x-lucide-check-check class="w-4 h-4" />
+                                            <span>Bayar</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -330,10 +361,21 @@
     <!-- ================= ISI TAB 4: PENGELUARAN ================= -->
     @else
         <div x-data="{ 
+            showAdd: false,
             showEdit: false, 
             editData: { id_pengeluaran: '', tgl_pengeluaran: '', kategori_pengeluaran: '', nominal: '', keterangan: '' } 
         }" class="space-y-4">
             
+            <!-- TOMBOL TAMBAH PENGELUARAN -->
+            <div class="flex justify-end">
+                <button @click="showAdd = true" 
+                        class="w-full sm:w-auto inline-flex justify-center items-center gap-2 bg-[#842529] hover:bg-red-900 text-white text-xs py-2.5 px-4 rounded-xl font-semibold shadow-sm transition-all active:scale-95">
+                    <x-lucide-plus-circle class="w-4 h-4 text-white" />
+                    <span>Tambah Pengeluaran</span>
+                </button>
+            </div>
+
+            <!-- DAFTAR PENGELUARAN -->
             <div class="space-y-3">
                 @forelse($pengeluaran as $pen)
                     <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm flex flex-col hover:border-gray-300 transition-colors">
@@ -358,23 +400,22 @@
                                 <span>Edit</span>
                             </button>
                             
-                            <form action="{{ url('/pengeluaran/' . $pen->id_pengeluaran) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus catatan pengeluaran ini?');">
+                            <form action="{{ url('/pengeluaran/' . $pen->id_pengeluaran) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <!-- Tombol Hapus Pengeluaran Kustom -->
-<button type="button" 
-        @click="$dispatch('confirm-action', { 
-            action: '{{ route('pengeluaran.destroy', $pen->id_pengeluaran) }}', 
-            title: 'Hapus Pengeluaran', 
-            message: 'Apakah Anda yakin ingin menghapus catatan pengeluaran ini?', 
-            method: 'DELETE',
-            confirmText: 'Ya, Hapus',
-            confirmClass: 'bg-rose-600 hover:bg-rose-700'
-        })"
-        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
-    <x-lucide-trash-2 class="w-3.5 h-3.5" />
-    <span>Hapus</span>
-</button>
+                                <button type="button" 
+                                        @click="$dispatch('confirm-action', { 
+                                            action: '{{ url('/pengeluaran/' . $pen->id_pengeluaran) }}', 
+                                            title: 'Hapus Pengeluaran', 
+                                            message: 'Apakah Anda yakin ingin menghapus catatan pengeluaran ini?', 
+                                            method: 'DELETE',
+                                            confirmText: 'Ya, Hapus',
+                                            confirmClass: 'bg-rose-600 hover:bg-rose-700'
+                                        })"
+                                        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
+                                    <x-lucide-trash-2 class="w-3.5 h-3.5" />
+                                    <span>Hapus</span>
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -386,9 +427,56 @@
                 @endforelse
             </div>
 
+            <!-- MODAL TAMBAH PENGELUARAN -->
+            <div x-show="showAdd" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
+                <div @click.away="showAdd = false" class="bg-white rounded-2xl w-full max-w-md p-5 shadow-xl relative border border-border-muted text-left">
+                    <button @click="showAdd = false" class="absolute top-4 right-4 text-gray-400 hover:text-[#842529] p-1 rounded-lg transition-colors">
+                        <x-lucide-x class="w-5 h-5" />
+                    </button>
+                    <h3 class="font-bold text-gray-800 mb-4 text-sm border-b border-border-muted pb-3 flex items-center gap-2">
+                        <x-lucide-plus-circle class="w-4 h-4 text-[#842529]" />
+                        <span>Tambah Pengeluaran Baru</span>
+                    </h3>
+                    
+                    <form action="{{ route('keuangan.pengeluaran.store') }}" method="POST" class="space-y-3">
+                        @csrf
+                        <div>
+                            <label class="block text-xs text-gray-700 font-semibold mb-1">Tanggal</label>
+                            <input type="date" name="tgl_pengeluaran" value="{{ date('Y-m-d') }}" 
+                                   class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-700 font-semibold mb-1">Kategori</label>
+                            <select name="kategori_pengeluaran" 
+                                    class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
+                                <option value="Makan">Makan</option>
+                                <option value="Pembelian Daging">Pembelian Daging</option>
+                                <option value="Operasional">Operasional</option>
+                                <option value="Transportasi">Transportasi</option>
+                                <option value="Lain-lain">Lain-lain</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-700 font-semibold mb-1">Nominal (Rp)</label>
+                            <input type="number" name="nominal" min="1000" placeholder="Contoh: 50000" 
+                                   class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-700 font-semibold mb-1">Keterangan</label>
+                            <textarea name="keterangan" rows="2" placeholder="Catatan pengeluaran..." 
+                                      class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required></textarea>
+                        </div>
+                        <div class="pt-3 flex gap-2">
+                            <button type="button" @click="showAdd = false" class="flex-1 border border-border-muted text-gray-700 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-50">Batal</button>
+                            <button type="submit" class="flex-1 bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold text-xs shadow">Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- MODAL EDIT PENGELUARAN -->
             <div x-show="showEdit" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
-                <div @click.away="showEdit = false" class="bg-white rounded-2xl w-full max-w-md p-5 shadow-xl relative border border-border-muted">
+                <div @click.away="showEdit = false" class="bg-white rounded-2xl w-full max-w-md p-5 shadow-xl relative border border-border-muted text-left">
                     <button @click="showEdit = false" class="absolute top-4 right-4 text-gray-400 hover:text-[#842529] p-1 rounded-lg transition-colors">
                         <x-lucide-x class="w-5 h-5" />
                     </button>

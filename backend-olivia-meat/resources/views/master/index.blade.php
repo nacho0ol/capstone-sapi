@@ -27,7 +27,37 @@
     @if($tab == 'produk')
         <!-- ================= KONTEN TAB PRODUK ================= -->
         <div class="space-y-4">
-            
+            <!-- Form Search Produk -->
+            <form action="{{ route('master.index') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-2 mb-4">
+                <!-- Mengunci tab tetap di 'produk' saat form dikey-in/submit -->
+                <input type="hidden" name="tab" value="produk">
+                
+                <div class="relative w-full sm:flex-1">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <x-lucide-search class="w-4 h-4" />
+                    </span>
+                    <input type="text" 
+                        name="search_produk" 
+                        value="{{ request('search_produk') }}" 
+                        placeholder="Cari nama produk, kategori, atau nama jagal..." 
+                        class="w-full pl-9 pr-4 py-2.5 bg-white border border-border-muted rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                </div>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button type="submit" class="w-full sm:w-auto bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                        <x-lucide-search class="w-3.5 h-3.5" />
+                        <span>Cari</span>
+                    </button>
+
+                    @if(request()->filled('search_produk'))
+                        <a href="{{ route('master.index', ['tab' => 'produk']) }}" 
+                        class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-3 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-1">
+                            <x-lucide-rotate-ccw class="w-3.5 h-3.5" />
+                            <span>Reset</span>
+                        </a>
+                    @endif
+                </div>
+            </form>
             <!-- Wrapper Alpine.js untuk Modal Tambah Produk + Format Ribuan -->
             <div x-data="{ 
                 openAdd: {{ old('form_type') == 'create_produk' && $errors->any() ? 'true' : 'false' }},
@@ -187,23 +217,22 @@
                                 <x-lucide-square-pen class="w-3.5 h-3.5" />
                                 <span>Edit</span>
                             </button>
-                            <form action="{{ route('master.produk.delete', $p->id_produk) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
+                            <form action="{{ route('master.produk.delete', $p->id_produk) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <!-- Tombol Hapus Produk Kustom -->
-<button type="button" 
-        @click="$dispatch('confirm-action', { 
-            action: '{{ route('master.produk.delete', $p->id_produk) }}', 
-            title: 'Hapus Produk', 
-            message: 'Apakah Anda yakin ingin menghapus {{ $p->nama_produk }}?', 
-            method: 'DELETE',
-            confirmText: 'Ya, Hapus',
-            confirmClass: 'bg-rose-600 hover:bg-rose-700'
-        })"
-        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
-    <x-lucide-trash-2 class="w-3.5 h-3.5" />
-    <span>Hapus</span>
-</button>
+                                <button type="button" 
+                                        @click="$dispatch('confirm-action', { 
+                                            action: '{{ route('master.produk.delete', $p->id_produk) }}', 
+                                            title: 'Hapus Produk', 
+                                            message: 'Apakah Anda yakin ingin menghapus {{ $p->nama_produk }}?', 
+                                            method: 'DELETE',
+                                            confirmText: 'Ya, Hapus',
+                                            confirmClass: 'bg-rose-600 hover:bg-rose-700'
+                                        })"
+                                        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
+                                    <x-lucide-trash-2 class="w-3.5 h-3.5" />
+                                    <span>Hapus</span>
+                                </button>
                             </form>
                         </div>
 
@@ -300,6 +329,38 @@
     @else
         <!-- ================= KONTEN TAB PELANGGAN ================= -->
         <div class="space-y-4">
+
+        <!-- Form Search Pelanggan -->
+<form action="{{ route('master.index') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-2 mb-4">
+    <!-- Pastikan tab tetap aktif di 'pelanggan' saat submit -->
+    <input type="hidden" name="tab" value="pelanggan">
+    
+    <div class="relative w-full sm:flex-1">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <x-lucide-search class="w-4 h-4" />
+        </span>
+        <input type="text" 
+               name="search_pelanggan" 
+               value="{{ request('search_pelanggan') }}" 
+               placeholder="Cari nama, no. telepon, atau alamat..." 
+               class="w-full pl-9 pr-4 py-2.5 bg-white border border-border-muted rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+    </div>
+
+    <div class="flex items-center gap-2 w-full sm:w-auto">
+        <button type="submit" class="w-full sm:w-auto bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+            <x-lucide-search class="w-3.5 h-3.5" />
+            <span>Cari</span>
+        </button>
+
+        @if(request()->filled('search_pelanggan'))
+            <a href="{{ route('master.index', ['tab' => 'pelanggan']) }}" 
+               class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-3 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-1">
+                <x-lucide-rotate-ccw class="w-3.5 h-3.5" />
+                <span>Reset</span>
+            </a>
+        @endif
+    </div>
+</form>
             
             <!-- Wrapper Alpine.js untuk Modal Tambah Pelanggan -->
             <div x-data="{ openAdd: {{ old('form_type') == 'create_pelanggan' && $errors->any() ? 'true' : 'false' }} }">
@@ -357,6 +418,14 @@
                                 <textarea name="alamat" placeholder="Alamat rumah / toko / warung" rows="3" required 
                                           class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all">{{ old('form_type') == 'create_pelanggan' ? old('alamat') : '' }}</textarea>
                             </div>
+
+                            <!-- INPUT BATAS TOLERANSI KHUSUS (TAMBAHAN ENTERPRISE FEATURE) -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Batas Toleransi Jatuh Tempo (Hari)</label>
+                                <input type="number" name="batas_toleransi_khusus" min="0" value="{{ old('form_type') == 'create_pelanggan' ? old('batas_toleransi_khusus') : '' }}" placeholder="Opsional (Kosongkan = Ikuti Aturan Toko)" 
+                                       class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all">
+                                <p class="text-[10px] text-gray-400 mt-1">*Kosongkan jika ingin mengikuti batas toleransi default toko.</p>
+                            </div>
                             
                             <button type="submit" class="w-full bg-[#842529] hover:bg-red-900 text-white text-xs py-2.5 rounded-xl font-bold transition-all shadow-md mt-2 flex items-center justify-center gap-2">
                                 <x-lucide-save class="w-4 h-4" />
@@ -389,6 +458,18 @@
                                     <x-lucide-map-pin class="w-3.5 h-3.5 text-gray-400" />
                                     <span>{{ $pl->alamat }}</span>
                                 </span>
+                                <span class="text-gray-300">•</span>
+                                <!-- TAMPILAN BADGE TOLERANSI KHUSUS VS GLOBAL -->
+                                <span class="flex items-center gap-1">
+                                    <x-lucide-clock class="w-3.5 h-3.5 text-gray-400" />
+                                    <span>Toleransi: 
+                                        @if($pl->batas_toleransi_khusus !== null)
+                                            <strong class="text-[#842529] font-bold">{{ $pl->batas_toleransi_khusus }} Hari (Khusus)</strong>
+                                        @else
+                                            <span class="text-gray-500 italic">Default Toko</span>
+                                        @endif
+                                    </span>
+                                </span>
                             </div>
                         </div>
 
@@ -399,23 +480,22 @@
                                 <x-lucide-square-pen class="w-3.5 h-3.5" />
                                 <span>Edit</span>
                             </button>
-                            <form action="{{ route('master.pelanggan.delete', $pl->id_pelanggan) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus pelanggan ini?')">
+                            <form action="{{ route('master.pelanggan.delete', $pl->id_pelanggan) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <!-- Tombol Hapus Pelanggan Kustom -->
-<button type="button" 
-        @click="$dispatch('confirm-action', { 
-            action: '{{ route('master.pelanggan.delete', $pl->id_pelanggan) }}', 
-            title: 'Hapus Pelanggan', 
-            message: 'Apakah Anda yakin ingin menghapus pelanggan {{ $pl->nama_pelanggan }}?', 
-            method: 'DELETE',
-            confirmText: 'Ya, Hapus',
-            confirmClass: 'bg-rose-600 hover:bg-rose-700'
-        })"
-        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
-    <x-lucide-trash-2 class="w-3.5 h-3.5" />
-    <span>Hapus</span>
-</button>
+                                <button type="button" 
+                                        @click="$dispatch('confirm-action', { 
+                                            action: '{{ route('master.pelanggan.delete', $pl->id_pelanggan) }}', 
+                                            title: 'Hapus Pelanggan', 
+                                            message: 'Apakah Anda yakin ingin menghapus pelanggan {{ $pl->nama_pelanggan }}?', 
+                                            method: 'DELETE',
+                                            confirmText: 'Ya, Hapus',
+                                            confirmClass: 'bg-rose-600 hover:bg-rose-700'
+                                        })"
+                                        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
+                                    <x-lucide-trash-2 class="w-3.5 h-3.5" />
+                                    <span>Hapus</span>
+                                </button>
                             </form>
                         </div>
 
@@ -467,6 +547,14 @@
                                         <label class="block text-xs font-semibold text-gray-700 mb-1">Alamat Lengkap</label>
                                         <textarea name="alamat" rows="3" required 
                                                   class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all">{{ old('id_pelanggan') == $pl->id_pelanggan ? old('alamat') : $pl->alamat }}</textarea>
+                                    </div>
+
+                                    <!-- EDIT BATAS TOLERANSI KHUSUS PELANGGAN -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">Batas Toleransi Jatuh Tempo (Hari)</label>
+                                        <input type="number" name="batas_toleransi_khusus" min="0" value="{{ old('id_pelanggan') == $pl->id_pelanggan ? old('batas_toleransi_khusus') : $pl->batas_toleransi_khusus }}" placeholder="Opsional (Kosongkan = Ikuti Aturan Toko)" 
+                                               class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all">
+                                        <p class="text-[10px] text-gray-400 mt-1">*Kosongkan jika ingin mengikuti batas toleransi default toko.</p>
                                     </div>
                                     
                                     <button type="submit" class="w-full bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold transition-all shadow-md mt-2 flex items-center justify-center gap-2">

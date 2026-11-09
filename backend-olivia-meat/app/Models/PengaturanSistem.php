@@ -14,7 +14,8 @@ class PengaturanSistem extends Model
         'template_tagihan',
         'is_notif_aktif',
         'telegram_bot_token',
-        'telegram_chat_id'
+        'telegram_chat_id',
+        'batas_toleransi_global'
     ];
 
     protected $casts = [

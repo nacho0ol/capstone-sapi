@@ -16,6 +16,7 @@ class Pelanggan extends Model
         'nama_pelanggan',
         'no_telp',
         'alamat',
-        'is_deleted'
+        'is_deleted',
+        'batas_toleransi_khusus'
     ];
 }

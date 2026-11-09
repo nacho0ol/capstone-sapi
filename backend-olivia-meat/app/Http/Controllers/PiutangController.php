@@ -6,6 +6,7 @@ use App\Models\Piutang;
 use App\Models\Pesanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator; 
 
 class PiutangController extends Controller
 {
@@ -39,13 +40,29 @@ class PiutangController extends Controller
 
     public function updatePembayaran(Request $request, $id)
     {
-        $request->validate([
-            'nominal_bayar' => 'required|integer|min:1000'
-        ], [
-            'nominal_bayar.min' => 'Pembayaran cicilan utang minimal adalah Rp 1.000.',
-            'nominal_bayar.required' => 'Nominal pembayaran wajib diisi.'
-        ]);
+        $piutang = Piutang::where('is_deleted', 0)->where('id_pesanan', $id)->firstOrFail();
+        $sisaTagihan = $piutang->total_tagihan - $piutang->jumlah_terbayar;
 
+        // Minimal Rp 1000. Tapi kalau sisa tagihan nyangkut di bawah 1000, minimalnya ngikutin sisa tagihan biar bisa dilunasi.
+        $minBayar = $sisaTagihan < 1000 ? $sisaTagihan : 1000;
+
+        $validator = Validator::make($request->all(), [
+            'nominal_bayar' => 'required|numeric|min:' . $minBayar . '|max:' . $sisaTagihan
+        ], [
+            'nominal_bayar.required' => 'Nominal pembayaran wajib diisi.',
+            'nominal_bayar.numeric' => 'Nominal pembayaran harus berupa angka.',
+            'nominal_bayar.min' => 'Pembayaran cicilan minimal adalah Rp ' . number_format($minBayar, 0, ',', '.') . '.',
+            'nominal_bayar.max' => 'Nominal bayar tidak boleh melebihi sisa tagihan (Rp ' . number_format($sisaTagihan, 0, ',', '.') . ').'
+        ]);
+        if ($validator->fails()) {
+            // Jika gagal, kembali ke halaman sebelumnya dengan membawa pesan error DAN identitas popup yang gagal
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error_modal_id', $id)
+                ->with('error_modal_sisa', $sisaTagihan);
+        }
+        
         DB::beginTransaction();
         try {
             $piutang = Piutang::where('is_deleted', 0)->where('id_pesanan', $id)->firstOrFail();

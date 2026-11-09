@@ -93,12 +93,15 @@
                     </div>
                 </div>
 
-                <!-- Remember Me -->
+                <!-- Remember Me & Forgot Password -->
                 <div class="flex items-center justify-between text-xs text-gray-600 pt-1">
                     <label class="flex items-center space-x-2 cursor-pointer">
                         <input type="checkbox" name="remember" class="accent-[#842529] rounded">
                         <span>Ingat saya</span>
                     </label>
+                    <a href="{{ route('password.request') }}" class="text-[#842529] hover:text-red-900 font-bold transition-colors active:scale-95 inline-block">
+                        Lupa Password?
+                    </a>
                 </div>
 
                 <!-- Tombol Submit -->

@@ -19,7 +19,9 @@ class DatabaseSeeder extends Seeder
             ['username' => 'admin'],
             [
                 'nama' => 'Admin Olivia',
+                'email' => 'nacholivia13@gmail.com', // 👈 Masukkan email di sini (gunakan emailmu sendiri jika mau tes kirim link beneran)
                 'password' => bcrypt('password123'),
+                'is_deleted' => 0,
             ]
         );
     }

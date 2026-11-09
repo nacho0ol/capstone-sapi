@@ -16,6 +16,9 @@ return new class extends Migration
             $table->id('id_user');
             $table->string('nama', 50);
             $table->string('username', 20)->unique();
+            
+            $table->string('email')->unique(); 
+            
             $table->string('password', 255);
             $table->rememberToken();
             $table->boolean('is_deleted')->default(0); // Kolom tambahan dari SQL-mu

@@ -2,14 +2,23 @@
 
 @section('content')
 <div x-data="{ 
-    showForm: false, 
-    selectedId: null, 
-    maxBayar: 0, 
-    sisaTagihan: 0,
+    //  Otomatis ngebuka modal kalau ada deteksi error dari controller 👇
+    showForm: {{ session('error_modal_id') ? 'true' : 'false' }}, 
+    selectedId: '{{ session('error_modal_id', '') }}', 
+    maxBayar: {{ session('error_modal_sisa', 0) }}, 
+    sisaTagihan: {{ session('error_modal_sisa', 0) }},
+    minBayar: {{ session('error_modal_sisa', 0) > 0 && session('error_modal_sisa', 0) < 1000 ? session('error_modal_sisa') : 1000 }},
 
-    // State untuk Format Ribuan Nominal Pembayaran
-    nominalRaw: '',
+    // Mengambil nominal lama yang bikin error biar nggak hilang
+    nominalRaw: '{{ old('nominal_bayar', '') }}',
     nominalFormatted: '',
+
+    init() {
+        // Otomatis ubah angka lama jadi format Rupiah saat halaman ke-refresh gara-gara error
+        if (this.nominalRaw) {
+            this.nominalFormatted = new Intl.NumberFormat('id-ID').format(this.nominalRaw);
+        }
+    },
 
     formatRupiah(val) {
         let number = String(val).replace(/\D/g, '');
@@ -26,8 +35,10 @@
 
     openBayarModal(id, sisa) {
         this.selectedId = id;
-        this.maxBayar = sisa;
         this.sisaTagihan = sisa;
+        this.maxBayar = sisa;
+        this.minBayar = sisa < 1000 ? sisa : 1000; 
+        
         this.nominalRaw = '';
         this.nominalFormatted = '';
         this.showForm = true;
@@ -35,18 +46,33 @@
 }" class="space-y-4">
     
     <!-- Header Halaman -->
-<div class="flex justify-between items-center">
-    <div class="flex items-center gap-3">
-        <a href="{{ route('keuangan.index') }}" 
-           class="p-2 bg-white border border-border-muted rounded-xl text-gray-600 hover:text-[#842529] hover:border-[#842529] hover:bg-gray-50 transition-all shadow-sm">
-            <x-lucide-arrow-left class="w-5 h-5" />
-        </a>
-        <div>
-            <h1 class="text-xl font-bold text-gray-900">Monitoring Piutang Pelanggan</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Pantau status tagihan tempo dan pencatatan cicilan</p>
+    <div class="flex justify-between items-center mb-2">
+        <div class="flex items-center gap-3">
+            <a href="{{ route('keuangan.index') }}" 
+               class="p-2 bg-white border border-border-muted rounded-xl text-gray-600 hover:text-[#842529] hover:border-[#842529] hover:bg-gray-50 transition-all shadow-sm">
+                <x-lucide-arrow-left class="w-5 h-5" />
+            </a>
+            <div>
+                <h1 class="text-xl font-bold text-gray-900">Monitoring Piutang Pelanggan</h1>
+                <p class="text-xs text-gray-500 mt-0.5">Pantau status tagihan tempo dan pencatatan cicilan</p>
+            </div>
         </div>
     </div>
-</div>
+
+    <!-- ALERT PESAN SUKSES / ERROR SISTEM -->
+    @if(session('success'))
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-2">
+            <x-lucide-check-circle class="w-4 h-4" />
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-2">
+            <x-lucide-alert-circle class="w-4 h-4 shrink-0" />
+            {{ session('error') }}
+        </div>
+    @endif
 
     <!-- MODAL PEMBAYARAN CICILAN -->
     <div x-show="showForm" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
@@ -75,7 +101,18 @@
                            class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all" 
                            placeholder="Contoh: 50.000" required>
                     
-                    <!-- Hidden input mengirim nominal murni tanpa titik -->
+                    @error('nominal_bayar')
+                        <p class="text-[11px] text-rose-600 mt-1.5 font-bold flex items-center gap-1">
+                            <x-lucide-alert-circle class="w-3.5 h-3.5" />
+                            {{ $message }}
+                        </p>
+                    @enderror
+                    
+                    <p class="text-[10px] text-gray-500 mt-1.5 italic">
+                        *Minimal bayar: <span class="font-bold text-gray-700">Rp <span x-text="minBayar.toLocaleString('id-ID')"></span></span> | 
+                        Maksimal: <span class="font-bold text-gray-700">Rp <span x-text="sisaTagihan.toLocaleString('id-ID')"></span></span>
+                    </p>
+                    
                     <input type="hidden" name="nominal_bayar" :value="nominalRaw">
                 </div>
 

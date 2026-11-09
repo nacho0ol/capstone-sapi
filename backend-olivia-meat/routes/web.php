@@ -11,12 +11,17 @@ use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\ProfilController;
 
 // Rute Autentikasi Pengguna (Sesuai Proposal Bab 2: Activity Diagram Login)
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
+    Route::get('/forgot-password', [AuthController::class, 'showLinkRequestForm'])->name('password.request')->middleware('guest');
+    Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email')->middleware('guest');
+    Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset')->middleware('guest');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update')->middleware('guest');
 // Rute yang Memerlukan Hak Akses Login
-Route::middleware('auth')->group(function () {
+    Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
 
     // Halaman Utama / Dashboard (Ringkasan Keuangan & Laba Rugi)
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
@@ -37,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/pengeluaran/store', [PengeluaranController::class, 'store'])->name('pengeluaran.store');
     Route::put('/pengeluaran/{id}', [PengeluaranController::class, 'update'])->name('pengeluaran.update');
     Route::delete('/pengeluaran/{id}', [PengeluaranController::class, 'destroy'])->name('pengeluaran.destroy');
+    Route::post('/keuangan/pengeluaran', [KeuanganController::class, 'storePengeluaran'])->name('keuangan.pengeluaran.store');
 
     // Rute Kelola Data (Master Data: Produk & Pelanggan)
     Route::get('/master', [MasterDataController::class, 'index'])->name('master.index');
@@ -60,4 +66,5 @@ Route::middleware('auth')->group(function () {
     // Rute Profil
     Route::get('/profil', [ProfilController::class, 'index'])->name('profil.index');
     Route::put('/profil/update', [ProfilController::class, 'update'])->name('profil.update');
+    Route::put('/profil/password', [ProfilController::class, 'updatePassword'])->name('profil.password.update');
 });
