@@ -15,13 +15,47 @@ class KeuanganController extends Controller
         $tab = $request->get('tab', 'labarugi');
 
     // 1. Data Laba Rugi
-    $totalPemasukan = Pesanan::where('pesanans.is_deleted', 0)
+    $filterWaktuLaba = $request->get('filter_laba_waktu', '');
+    $filterTanggalLaba = $request->get('filter_laba_tanggal', ''); // <-- Tambahan filter tanggal spesifik
+
+    // Base Query Pemasukan (Pesanan Lunas & Tidak Dibatalkan)
+    $pemasukanQuery = Pesanan::where('pesanans.is_deleted', 0)
         ->where('pesanans.status_bayar', 'Lunas')
         ->whereNotIn('pesanans.status_pemesanan', ['Ditolak', 'Dibatalkan', 'ditolak', 'dibatalkan'])
-        ->join('pesanan_details', 'pesanans.id_pesanan', '=', 'pesanan_details.id_pesanan')
-        ->sum(\DB::raw('pesanan_details.subtotal'));
+        ->join('pesanan_details', 'pesanans.id_pesanan', '=', 'pesanan_details.id_pesanan');
 
-    $totalPengeluaran = PengeluaranHarian::sum('nominal');
+    // Base Query Pengeluaran
+    $pengeluaranQuery = PengeluaranHarian::where('is_deleted', 0);
+
+    // Prioritas 1: Jika user memilih tanggal spesifik
+    if (!empty($filterTanggalLaba)) {
+        $pemasukanQuery->whereDate('pesanans.tgl_order', $filterTanggalLaba);
+        $pengeluaranQuery->whereDate('tgl_pengeluaran', $filterTanggalLaba);
+    } 
+    // Prioritas 2: Jika user memilih rentang waktu cepat (hari/minggu/bulan)
+    elseif (!empty($filterWaktuLaba)) {
+        if ($filterWaktuLaba == 'hari_ini') {
+            $pemasukanQuery->whereDate('pesanans.tgl_order', \Carbon\Carbon::today());
+            $pengeluaranQuery->whereDate('tgl_pengeluaran', \Carbon\Carbon::today());
+        } elseif ($filterWaktuLaba == 'minggu_ini') {
+            $pemasukanQuery->whereBetween('pesanans.tgl_order', [
+                \Carbon\Carbon::now()->startOfWeek(), 
+                \Carbon\Carbon::now()->endOfWeek()
+            ]);
+            $pengeluaranQuery->whereBetween('tgl_pengeluaran', [
+                \Carbon\Carbon::now()->startOfWeek(), 
+                \Carbon\Carbon::now()->endOfWeek()
+            ]);
+        } elseif ($filterWaktuLaba == 'bulan_ini') {
+            $pemasukanQuery->whereMonth('pesanans.tgl_order', \Carbon\Carbon::now()->month)
+                           ->whereYear('pesanans.tgl_order', \Carbon\Carbon::now()->year);
+            $pengeluaranQuery->whereMonth('tgl_pengeluaran', \Carbon\Carbon::now()->month)
+                             ->whereYear('tgl_pengeluaran', \Carbon\Carbon::now()->year);
+        }
+    }
+
+    $totalPemasukan = $pemasukanQuery->sum(\DB::raw('pesanan_details.subtotal'));
+    $totalPengeluaran = $pengeluaranQuery->sum('nominal');
     $labaRugi = $totalPemasukan - $totalPengeluaran;
 
     // 2. Query Pesanan + Filter Search
@@ -39,8 +73,75 @@ class KeuanganController extends Controller
         });
     }
 
+    // --- TAMBAHAN FILTER BARU ---
+    // Filter Waktu (Hari, Minggu, Bulan Ini)
+    if ($request->filled('filter_waktu')) {
+        $waktu = $request->filter_waktu;
+        if ($waktu == 'hari_ini') {
+            $pesananQuery->whereDate('tgl_order', \Carbon\Carbon::today());
+        } elseif ($waktu == 'minggu_ini') {
+            $pesananQuery->whereBetween('tgl_order', [
+                \Carbon\Carbon::now()->startOfWeek(), 
+                \Carbon\Carbon::now()->endOfWeek()
+            ]);
+        } elseif ($waktu == 'bulan_ini') {
+            $pesananQuery->whereMonth('tgl_order', \Carbon\Carbon::now()->month)
+                         ->whereYear('tgl_order', \Carbon\Carbon::now()->year);
+        }
+    }
+
+    // Filter Pelanggan Spesifik (Dropdown)
+    if ($request->filled('filter_pelanggan')) {
+        $pesananQuery->where('id_pelanggan', $request->filter_pelanggan);
+    }
+
+    // Filter Status Pembayaran
+    if ($request->filled('filter_status_bayar')) {
+        $pesananQuery->where('status_bayar', $request->filter_status_bayar);
+    }
+
+    // Filter Status Pesanan
+    if ($request->filled('filter_status_pesanan')) {
+        $pesananQuery->where('status_pemesanan', $request->filter_status_pesanan);
+    }
+
     $pesanan = $pesananQuery->orderBy('tgl_order', 'desc')->orderBy('id_pesanan', 'desc')->get();
-    $piutang = Piutang::where('is_deleted', 0)->get();
+
+    $pesanan = $pesananQuery->orderBy('tgl_order', 'desc')->orderBy('id_pesanan', 'desc')->get();
+    //
+    // --- QUERY PIUTANG DENGAN FILTER ---
+    $piutangQuery = Piutang::with(['pesanan.pelanggan'])->where('is_deleted', 0);
+
+    // 1. Filter Pelanggan
+    if ($request->filled('filter_piutang_pelanggan')) {
+        $idPelanggan = $request->filter_piutang_pelanggan;
+        $piutangQuery->whereHas('pesanan', function($q) use ($idPelanggan) {
+            $q->where('id_pelanggan', $idPelanggan);
+        });
+    }
+
+    // 2. Filter Status Piutang (Belum Lunas / Lunas)
+    if ($request->filled('filter_status_piutang')) {
+        $piutangQuery->where('status_piutang', $request->filter_status_piutang);
+    }
+
+    // 3. Filter Kategori Jatuh Tempo (Overdue / Hari Ini)
+    if ($request->filled('filter_jatuh_tempo')) {
+        $kategoriTempo = $request->filter_jatuh_tempo;
+        $today = \Carbon\Carbon::today();
+
+        if ($kategoriTempo == 'hari_ini') {
+            $piutangQuery->whereDate('tgl_jatuh_tempo', $today);
+        } elseif ($kategoriTempo == 'overdue') {
+            $piutangQuery->whereDate('tgl_jatuh_tempo', '<', $today)
+                         ->where('status_piutang', '!=', 'Lunas');
+        } elseif ($kategoriTempo == 'aman') {
+            $piutangQuery->whereDate('tgl_jatuh_tempo', '>', $today)
+                         ->where('status_piutang', '!=', 'Lunas');
+        }
+    }
+
+    $piutang = $piutangQuery->orderBy('tgl_jatuh_tempo', 'asc')->get();$piutang = Piutang::where('is_deleted', 0)->get();
     // LOGIKA FILTER PENGELUARAN DI KEUANGAN CONTROLLER
     $pengeluaranQuery = PengeluaranHarian::where('is_deleted', 0);
 

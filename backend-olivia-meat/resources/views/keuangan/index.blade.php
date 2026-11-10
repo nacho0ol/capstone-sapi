@@ -43,6 +43,44 @@
     <!-- ================= ISI TAB 1: LABA RUGI ================= -->
     @if($tab == 'labarugi')
         <div class="space-y-4">
+            
+            <!-- FORM FILTER WAKTU & TANGGAL LABA RUGI -->
+            <form action="{{ route('keuangan.index') }}" method="GET" class="bg-white border border-border-muted p-3 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-2">
+                <input type="hidden" name="tab" value="labarugi">
+                
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto flex-1">
+                    <!-- Dropdown Waktu Cepat -->
+                    <div class="w-full sm:w-52">
+                        <select name="filter_laba_waktu" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                            <option value="">Semua Waktu</option>
+                            <option value="hari_ini" {{ request('filter_laba_waktu') == 'hari_ini' ? 'selected' : '' }}>Hari Ini</option>
+                            <option value="minggu_ini" {{ request('filter_laba_waktu') == 'minggu_ini' ? 'selected' : '' }}>Minggu Ini</option>
+                            <option value="bulan_ini" {{ request('filter_laba_waktu') == 'bulan_ini' ? 'selected' : '' }}>Bulan Ini</option>
+                        </select>
+                    </div>
+
+                    <!-- Input Tanggal Spesifik -->
+                    <div class="w-full sm:w-44">
+                        <input type="date" name="filter_laba_tanggal" value="{{ request('filter_laba_tanggal') }}" 
+                               class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                    </div>
+
+                    <!-- Tombol Terapkan -->
+                    <button type="submit" class="w-full sm:w-auto bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                        <x-lucide-filter class="w-3.5 h-3.5" />
+                        <span>Filter</span>
+                    </button>
+                </div>
+
+                @if(request()->filled('filter_laba_waktu') || request()->filled('filter_laba_tanggal'))
+                    <a href="{{ route('keuangan.index', ['tab' => 'labarugi']) }}" 
+                       class="text-xs text-gray-500 hover:text-[#842529] font-bold px-2 py-1 transition-colors flex items-center gap-1">
+                        <x-lucide-rotate-ccw class="w-3.5 h-3.5" />
+                        <span>Reset</span>
+                    </a>
+                @endif
+            </form>
+
             <!-- Hero Card: Estimasi Laba Bersih -->
             <div class="bg-white border border-border-muted rounded-2xl p-5 shadow-sm relative overflow-hidden">
                 <div class="flex items-center justify-between">
@@ -82,40 +120,82 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div>   
         
     <!-- ================= ISI TAB 2: DAFTAR PESANAN ================= -->
     @elseif($tab == 'riwayat')
         <div class="space-y-3">
             
-            <!-- FORM PENCARIAN PESANAN -->
-            <form action="{{ route('keuangan.index') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-2 mb-4">
+            <!-- FORM PENCARIAN & FILTER PESANAN -->
+            <form action="{{ route('keuangan.index') }}" method="GET" class="bg-gray-50 border border-border-muted p-3 rounded-2xl mb-4 space-y-3">
+                <!-- INI YANG BIKIN TAB GAK LOMPAT -->
                 <input type="hidden" name="tab" value="riwayat"> 
                 
-                <div class="relative w-full sm:flex-1">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                        <x-lucide-search class="w-4 h-4" />
-                    </span>
-                    <input type="text" 
-                           name="search_pesanan" 
-                           value="{{ request('search_pesanan') }}" 
-                           placeholder="Cari No. Nota, nama pelanggan, atau status bayar..." 
-                           class="w-full pl-9 pr-4 py-2.5 bg-white border border-border-muted rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                <!-- Baris 1: Search Text & Tombol Eksekusi -->
+                <div class="flex flex-col sm:flex-row items-center gap-2">
+                    <div class="relative w-full sm:flex-1">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <x-lucide-search class="w-4 h-4" />
+                        </span>
+                        <input type="text" 
+                               name="search_pesanan" 
+                               value="{{ request('search_pesanan') }}" 
+                               placeholder="Cari No. Nota, nama pelanggan, atau status bayar..." 
+                               class="w-full pl-9 pr-4 py-2.5 bg-white border border-border-muted rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button type="submit" class="w-full sm:w-auto bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                            <x-lucide-filter class="w-3.5 h-3.5" />
+                            <span>Filter</span>
+                        </button>
+
+                        @if(request()->filled('search_pesanan') || request()->filled('filter_waktu') || request()->filled('filter_pelanggan') || request()->filled('filter_status_bayar') || request()->filled('filter_status_pesanan'))
+                            <a href="{{ route('keuangan.index', ['tab' => 'riwayat']) }}" 
+                               class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-3 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-1">
+                                <x-lucide-rotate-ccw class="w-3.5 h-3.5" />
+                                <span>Reset</span>
+                            </a>
+                        @endif
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <button type="submit" class="w-full sm:w-auto bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
-                        <x-lucide-search class="w-3.5 h-3.5" />
-                        <span>Cari</span>
-                    </button>
+                <!-- Baris 2: Dropdown Filter Spesifik (Grid 4 Kolom) -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <!-- Filter Waktu -->
+                    <select name="filter_waktu" class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                        <option value="">Semua Waktu</option>
+                        <option value="hari_ini" {{ request('filter_waktu') == 'hari_ini' ? 'selected' : '' }}>Hari Ini</option>
+                        <option value="minggu_ini" {{ request('filter_waktu') == 'minggu_ini' ? 'selected' : '' }}>Minggu Ini</option>
+                        <option value="bulan_ini" {{ request('filter_waktu') == 'bulan_ini' ? 'selected' : '' }}>Bulan Ini</option>
+                    </select>
 
-                    @if(request()->filled('search_pesanan'))
-                        <a href="{{ route('keuangan.index', ['tab' => 'riwayat']) }}" 
-                           class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-3 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-1">
-                            <x-lucide-rotate-ccw class="w-3.5 h-3.5" />
-                            <span>Reset</span>
-                        </a>
-                    @endif
+                    <!-- Filter Pelanggan -->
+                    <select name="filter_pelanggan" class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                        <option value="">Semua Pelanggan</option>
+                        @foreach($pelanggans ?? [] as $plg)
+                            <option value="{{ $plg->id_pelanggan }}" {{ request('filter_pelanggan') == $plg->id_pelanggan ? 'selected' : '' }}>
+                                {{ $plg->nama_pelanggan }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <!-- Filter Status Bayar -->
+                    <select name="filter_status_bayar" class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                        <option value="">Semua Pembayaran</option>
+                        <option value="Lunas" {{ request('filter_status_bayar') == 'Lunas' ? 'selected' : '' }}>Lunas</option>
+                        <option value="DP" {{ request('filter_status_bayar') == 'DP' ? 'selected' : '' }}>Sebagian (DP)</option>
+                        <option value="Unpaid" {{ request('filter_status_bayar') == 'Unpaid' ? 'selected' : '' }}>Unpaid</option>
+                    </select>
+
+                    <!-- Filter Status Pesanan -->
+                    <select name="filter_status_pesanan" class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                        <option value="">Semua Status</option>
+                        <option value="Diterima" {{ request('filter_status_pesanan') == 'Diterima' ? 'selected' : '' }}>Diterima</option>
+                        <option value="Diproses" {{ request('filter_status_pesanan') == 'Diproses' ? 'selected' : '' }}>Diproses</option>
+                        <option value="Selesai" {{ request('filter_status_pesanan') == 'Selesai' ? 'selected' : '' }}>Selesai</option>
+                        <option value="Dibatalkan" {{ request('filter_status_pesanan') == 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
+                    </select>
                 </div>
             </form>
 
@@ -343,23 +423,90 @@
                 </a>
             </div>
 
+            <!-- FORM FILTER PIUTANG -->
+            <form action="{{ route('keuangan.index') }}" method="GET" class="bg-white border border-border-muted p-3 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center gap-2">
+                <input type="hidden" name="tab" value="piutang">
+
+                <!-- Filter Pelanggan -->
+                <div class="w-full sm:flex-1">
+                    <select name="filter_piutang_pelanggan" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                        <option value="">Semua Pelanggan</option>
+                        @foreach($pelanggans ?? [] as $plg)
+                            <option value="{{ $plg->id_pelanggan }}" {{ request('filter_piutang_pelanggan') == $plg->id_pelanggan ? 'selected' : '' }}>
+                                {{ $plg->nama_pelanggan }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Filter Status Piutang -->
+                <div class="w-full sm:w-auto sm:min-w-[150px]">
+                    <select name="filter_status_piutang" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                        <option value="">Semua Status</option>
+                        <option value="Belum Lunas" {{ request('filter_status_piutang') == 'Belum Lunas' ? 'selected' : '' }}>Belum Lunas</option>
+                        <option value="Lunas" {{ request('filter_status_piutang') == 'Lunas' ? 'selected' : '' }}>Lunas</option>
+                    </select>
+                </div>
+
+                <!-- Filter Status Jatuh Tempo -->
+                <div class="w-full sm:w-auto sm:min-w-[160px]">
+                    <select name="filter_jatuh_tempo" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                        <option value="">Semua Jatuh Tempo</option>
+                        <option value="overdue" {{ request('filter_jatuh_tempo') == 'overdue' ? 'selected' : '' }}>Terlambat (Overdue)</option>
+                        <option value="hari_ini" {{ request('filter_jatuh_tempo') == 'hari_ini' ? 'selected' : '' }}>Jatuh Tempo Hari Ini</option>
+                        <option value="aman" {{ request('filter_jatuh_tempo') == 'aman' ? 'selected' : '' }}>Masih Aman</option>
+                    </select>
+                </div>
+
+                <!-- Tombol Aksi -->
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button type="submit" class="w-full sm:w-auto bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                        <x-lucide-filter class="w-3.5 h-3.5" />
+                        <span>Filter</span>
+                    </button>
+
+                    @if(request()->filled('filter_piutang_pelanggan') || request()->filled('filter_status_piutang') || request()->filled('filter_jatuh_tempo'))
+                        <a href="{{ route('keuangan.index', ['tab' => 'piutang']) }}" 
+                           class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-3 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-1">
+                            <x-lucide-rotate-ccw class="w-3.5 h-3.5" />
+                            <span>Reset</span>
+                        </a>
+                    @endif
+                </div>
+            </form>
+
+            <!-- DAFTAR PIUTANG -->
             <div class="space-y-2">
-                @foreach($piutang as $pi)
+                @forelse($piutang as $pi)
                     <div class="bg-white border border-border-muted rounded-2xl p-4 text-xs shadow-sm flex justify-between items-center">
                         <div class="space-y-1">
-                            <span class="font-bold text-gray-900 font-mono">{{ $pi->id_pesanan }}</span>
-                            <p class="text-gray-500">Total Tagihan: <strong class="text-gray-800">Rp {{ number_format($pi->total_tagihan, 0, ',', '.') }}</strong></p>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-gray-900 font-mono">{{ $pi->id_pesanan }}</span>
+                                <span class="text-gray-500">•</span>
+                                <span class="text-gray-700 font-semibold">{{ $pi->pesanan->pelanggan->nama_pelanggan ?? 'Pelanggan Umum' }}</span>
+                            </div>
+                            <p class="text-gray-500">
+                                Total Tagihan: <strong class="text-gray-800">Rp {{ number_format($pi->total_tagihan, 0, ',', '.') }}</strong>
+                                @if(!empty($pi->tgl_jatuh_tempo))
+                                    <span class="text-gray-400 ml-2">| Jatuh Tempo: {{ date('d M Y', strtotime($pi->tgl_jatuh_tempo)) }}</span>
+                                @endif
+                            </p>
                         </div>
                         <span class="px-2.5 py-1 rounded-md text-[10px] font-bold border {{ $pi->status_piutang == 'Lunas' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700' }}">
                             {{ $pi->status_piutang }}
                         </span>
                     </div>
-                @endforeach
+                @empty
+                    <div class="text-center bg-white rounded-2xl border border-border-muted py-12 shadow-sm">
+                        <x-lucide-receipt class="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                        <p class="text-gray-400 text-xs">Tidak ada data piutang yang sesuai dengan filter.</p>
+                    </div>
+                @endforelse
             </div>
         </div>
         
-    <!-- ================= ISI TAB 4: PENGELUARAN ================= -->
-    <!-- ================= ISI TAB 4: PENGELUARAN ================= -->
+
+        <!-- ================= ISI TAB 4: PENGELUARAN ================= -->
     @else
         <div x-data="{ 
             // Cek jika ada error validasi di Laravel, otomatis buka modal tambah
