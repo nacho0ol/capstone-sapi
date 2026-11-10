@@ -35,7 +35,7 @@ class PengeluaranHarianController extends Controller
 
         $pengeluaran = PengeluaranHarian::create($validated);
 
-        return response()->json(['message' => 'Pengeluaran berhasil dicatat', 'data' => $pengeluaran], 201);
+        return redirect()->back()->with('success', 'Pengeluaran berhasil dicatat');
     }
 
     public function show($id)
@@ -57,7 +57,7 @@ class PengeluaranHarianController extends Controller
 
         $pengeluaran->update($validated);
 
-        return response()->json(['message' => 'Data pengeluaran berhasil diperbarui', 'data' => $pengeluaran]);
+        return redirect()->back()->with('success', 'Data pengeluaran berhasil diperbarui');
     }
 
     public function destroy($id)
@@ -65,6 +65,6 @@ class PengeluaranHarianController extends Controller
         $pengeluaran = PengeluaranHarian::findOrFail($id);
         $pengeluaran->delete();
 
-        return response()->json(['message' => 'Data pengeluaran berhasil dihapus']);
+        return redirect()->back()->with('success', 'Data pengeluaran berhasil dihapus');
     }
 }

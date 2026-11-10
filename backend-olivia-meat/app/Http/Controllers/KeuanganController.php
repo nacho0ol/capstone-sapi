@@ -41,7 +41,18 @@ class KeuanganController extends Controller
 
     $pesanan = $pesananQuery->orderBy('tgl_order', 'desc')->orderBy('id_pesanan', 'desc')->get();
     $piutang = Piutang::where('is_deleted', 0)->get();
-    $pengeluaran = PengeluaranHarian::orderBy('tgl_pengeluaran', 'desc')->get();
+    // LOGIKA FILTER PENGELUARAN DI KEUANGAN CONTROLLER
+    $pengeluaranQuery = PengeluaranHarian::where('is_deleted', 0);
+
+    if ($request->filled('filter_tanggal')) {
+        $pengeluaranQuery->whereDate('tgl_pengeluaran', $request->filter_tanggal);
+    }
+
+    if ($request->filled('filter_kategori')) {
+        $pengeluaranQuery->where('kategori_pengeluaran', $request->filter_kategori);
+    }
+
+    $pengeluaran = $pengeluaranQuery->orderBy('tgl_pengeluaran', 'desc')->get();
     $pengaturan = PengaturanSistem::first();
 
     // 3. Data Produk & Pelanggan untuk Modal Buat Pesanan Baru

@@ -359,19 +359,99 @@
         </div>
         
     <!-- ================= ISI TAB 4: PENGELUARAN ================= -->
+    <!-- ================= ISI TAB 4: PENGELUARAN ================= -->
     @else
         <div x-data="{ 
-            showAdd: false,
-            showEdit: false, 
-            editData: { id_pengeluaran: '', tgl_pengeluaran: '', kategori_pengeluaran: '', nominal: '', keterangan: '' } 
+            // Cek jika ada error validasi di Laravel, otomatis buka modal tambah
+            showAdd: {{ $errors->any() && !old('id_pengeluaran') ? 'true' : 'false' }},
+            
+            // Cek jika ada error validasi di Edit (biasanya bawa hidden input id_pengeluaran)
+            showEdit: {{ $errors->any() && old('id_pengeluaran') ? 'true' : 'false' }}, 
+            
+            editData: { id_pengeluaran: '', tgl_pengeluaran: '', kategori_pengeluaran: '', nominal: '', keterangan: '' },
+            
+            // Variabel Format Rupiah Tambah (bawa nilai 'old' jika ada error)
+            nominalAddRaw: '{{ old('nominal') }}',
+            nominalAddFormatted: '{{ old('nominal') ? number_format(old('nominal'), 0, ',', '.') : '' }}',
+            
+            // Variabel Format Rupiah Edit
+            nominalEditRaw: '',
+            nominalEditFormatted: '',
+
+            formatRupiah(val) {
+                let number = String(val).replace(/\D/g, '');
+                if (!number) return { raw: '', formatted: '' };
+                let formatted = new Intl.NumberFormat('id-ID').format(number);
+                return { raw: number, formatted: formatted };
+            },
+
+            onNominalAddInput(e) {
+                let res = this.formatRupiah(e.target.value);
+                this.nominalAddRaw = res.raw;
+                this.nominalAddFormatted = res.formatted;
+            },
+
+            onNominalEditInput(e) {
+                let res = this.formatRupiah(e.target.value);
+                this.nominalEditRaw = res.raw;
+                this.nominalEditFormatted = res.formatted;
+            },
+            
+            openEdit(pen) {
+                this.editData = pen;
+                this.nominalEditRaw = pen.nominal;
+                this.nominalEditFormatted = this.formatRupiah(pen.nominal).formatted;
+                this.showEdit = true;
+            }
         }" class="space-y-4">
             
             <!-- TOMBOL TAMBAH PENGELUARAN -->
-            <div class="flex justify-end">
-                <button @click="showAdd = true" 
-                        class="w-full sm:w-auto inline-flex justify-center items-center gap-2 bg-[#842529] hover:bg-red-900 text-white text-xs py-2.5 px-4 rounded-xl font-semibold shadow-sm transition-all active:scale-95">
+            <!-- FORM FILTER & TOMBOL TAMBAH -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                
+                <!-- Form Filter -->
+                <form action="{{ route('keuangan.index') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto flex-1">
+                    <input type="hidden" name="tab" value="pengeluaran">
+                    
+                    <!-- Filter Tanggal -->
+                    <div class="w-full sm:max-w-[150px]">
+                        <input type="date" name="filter_tanggal" value="{{ request('filter_tanggal') }}" 
+                               class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                    </div>
+
+                    <!-- Filter Kategori -->
+                    <div class="w-full sm:max-w-[180px]">
+                        <select name="filter_kategori" class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                            <option value="">Semua Kategori</option>
+                            <option value="Makan" {{ request('filter_kategori') == 'Makan' ? 'selected' : '' }}>Makan</option>
+                            <option value="Pembelian Daging" {{ request('filter_kategori') == 'Pembelian Daging' ? 'selected' : '' }}>Pembelian Daging</option>
+                            <option value="Operasional" {{ request('filter_kategori') == 'Operasional' ? 'selected' : '' }}>Operasional</option>
+                            <option value="Transportasi" {{ request('filter_kategori') == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
+                            <option value="Lain-lain" {{ request('filter_kategori') == 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                        <button type="submit" class="w-full sm:w-auto bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                            <x-lucide-filter class="w-3.5 h-3.5" />
+                            <span>Filter</span>
+                        </button>
+
+                        @if(request()->filled('filter_tanggal') || request()->filled('filter_kategori'))
+                            <a href="{{ route('keuangan.index', ['tab' => 'pengeluaran']) }}" 
+                               class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-3 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-1">
+                                <x-lucide-rotate-ccw class="w-3.5 h-3.5" />
+                                <span>Reset</span>
+                            </a>
+                        @endif
+                    </div>
+                </form>
+
+                <!-- Tombol Tambah -->
+                <button @click="showAdd = true; nominalAddRaw = ''; nominalAddFormatted = '';" 
+                        class="w-full sm:w-auto inline-flex justify-center items-center gap-1.5 bg-[#842529] hover:bg-red-900 text-white text-xs py-2 px-4 rounded-xl font-bold shadow-sm transition-all active:scale-95">
                     <x-lucide-plus-circle class="w-4 h-4 text-white" />
-                    <span>Tambah Pengeluaran</span>
+                    <span>Tambah</span>
                 </button>
             </div>
 
@@ -394,7 +474,7 @@
                         </div>
                         
                         <div class="flex justify-end gap-2 border-t border-border-muted pt-3 mt-1">
-                            <button @click="editData = {{ json_encode($pen) }}; showEdit = true;" 
+                            <button @click="openEdit({{ json_encode($pen) }})" 
                                     class="inline-flex items-center gap-1 text-amber-700 font-semibold px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors text-xs">
                                 <x-lucide-square-pen class="w-3.5 h-3.5" />
                                 <span>Edit</span>
@@ -438,33 +518,51 @@
                         <span>Tambah Pengeluaran Baru</span>
                     </h3>
                     
-                    <form action="{{ route('keuangan.pengeluaran.store') }}" method="POST" class="space-y-3">
+                    <form action="{{ route('pengeluaran.store') }}" method="POST" class="space-y-3">
+                        @if ($errors->any() && !old('id_pengeluaran'))
+                            <div class="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-xl text-xs mb-3 space-y-1">
+                                <div class="font-bold flex items-center gap-1.5">
+                                    <x-lucide-alert-circle class="w-4 h-4 text-red-600 flex-shrink-0" />
+                                    <span>Gagal Menyimpan:</span>
+                                </div>
+                                <ul class="list-disc pl-5 space-y-0.5">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                         @csrf
+                        <input type="hidden" name="tab" value="pengeluaran">
+                        
                         <div>
                             <label class="block text-xs text-gray-700 font-semibold mb-1">Tanggal</label>
-                            <input type="date" name="tgl_pengeluaran" value="{{ date('Y-m-d') }}" 
+                            <input type="date" name="tgl_pengeluaran" value="{{ old('tgl_pengeluaran', date('Y-m-d')) }}" 
                                    class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
                         </div>
                         <div>
                             <label class="block text-xs text-gray-700 font-semibold mb-1">Kategori</label>
                             <select name="kategori_pengeluaran" 
                                     class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
-                                <option value="Makan">Makan</option>
-                                <option value="Pembelian Daging">Pembelian Daging</option>
-                                <option value="Operasional">Operasional</option>
-                                <option value="Transportasi">Transportasi</option>
-                                <option value="Lain-lain">Lain-lain</option>
+                                <option value="Makan" {{ old('kategori_pengeluaran') == 'Makan' ? 'selected' : '' }}>Makan</option>
+                                <option value="Pembelian Daging" {{ old('kategori_pengeluaran') == 'Pembelian Daging' ? 'selected' : '' }}>Pembelian Daging</option>
+                                <option value="Operasional" {{ old('kategori_pengeluaran') == 'Operasional' ? 'selected' : '' }}>Operasional</option>
+                                <option value="Transportasi" {{ old('kategori_pengeluaran') == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
+                                <option value="Lain-lain" {{ old('kategori_pengeluaran') == 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs text-gray-700 font-semibold mb-1">Nominal (Rp)</label>
-                            <input type="number" name="nominal" min="1000" placeholder="Contoh: 50000" 
+                            <!-- Input tampilan (Tipe Teks) -->
+                            <input type="text" x-model="nominalAddFormatted" @input="onNominalAddInput($event)" placeholder="Contoh: 50.000" 
                                    class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
+                            <!-- Input rahasia (Angka murni ke database) -->
+                            <input type="hidden" name="nominal" :value="nominalAddRaw">
                         </div>
                         <div>
                             <label class="block text-xs text-gray-700 font-semibold mb-1">Keterangan</label>
-                            <textarea name="keterangan" rows="2" placeholder="Catatan pengeluaran..." 
-                                      class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required></textarea>
+                            <textarea name="keterangan" rows="2" minlength="1" placeholder="Catatan pengeluaran..." 
+                                      class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>{{ old('keterangan') }}</textarea>
                         </div>
                         <div class="pt-3 flex gap-2">
                             <button type="button" @click="showAdd = false" class="flex-1 border border-border-muted text-gray-700 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-50">Batal</button>
@@ -486,8 +584,26 @@
                     </h3>
                     
                     <form :action="'{{ url('/pengeluaran') }}/' + editData.id_pengeluaran" method="POST" class="space-y-3">
+                        @if ($errors->any() && old('id_pengeluaran'))
+                            <div class="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-xl text-xs mb-3 space-y-1">
+                                <div class="font-bold flex items-center gap-1.5">
+                                    <x-lucide-alert-circle class="w-4 h-4 text-red-600 flex-shrink-0" />
+                                    <span>Gagal Update:</span>
+                                </div>
+                                <ul class="list-disc pl-5 space-y-0.5">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
                         @csrf
                         @method('PUT')
+                        <input type="hidden" name="tab" value="pengeluaran">
+                        
+                        <!-- Hidden input agar sistem tahu kalau error ini berasal dari modal edit -->
+                        <input type="hidden" name="id_pengeluaran" x-model="editData.id_pengeluaran">
+                        
                         <div>
                             <label class="block text-xs text-gray-700 font-semibold mb-1">Tanggal</label>
                             <input type="date" name="tgl_pengeluaran" x-model="editData.tgl_pengeluaran" 
@@ -506,12 +622,13 @@
                         </div>
                         <div>
                             <label class="block text-xs text-gray-700 font-semibold mb-1">Nominal (Rp)</label>
-                            <input type="number" name="nominal" x-model="editData.nominal" min="1000" 
+                            <input type="text" x-model="nominalEditFormatted" @input="onNominalEditInput($event)" placeholder="Contoh: 50.000" 
                                    class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
+                            <input type="hidden" name="nominal" :value="nominalEditRaw">
                         </div>
                         <div>
                             <label class="block text-xs text-gray-700 font-semibold mb-1">Keterangan</label>
-                            <textarea name="keterangan" x-model="editData.keterangan" rows="2" 
+                            <textarea name="keterangan" x-model="editData.keterangan" rows="2" minlength="1" 
                                       class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required></textarea>
                         </div>
                         <div class="pt-3 flex gap-2">
