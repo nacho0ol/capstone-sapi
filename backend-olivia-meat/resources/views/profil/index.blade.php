@@ -115,14 +115,8 @@
                        class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all" required>
             </div>
 
-            <div class="pt-2 flex gap-2">
-                <button type="button" 
-                        @click="isEditing = false" 
-                        class="flex-1 border border-border-muted text-gray-700 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-50 transition-colors">
-                    Batal
-                </button>
-                <button type="submit" 
-                        class="flex-1 bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold text-xs shadow-md transition-all active:scale-95">
+            <div class="pt-2 flex justify-end">
+                <button type="submit" class="bg-[#842529] hover:bg-red-900 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all active:scale-95">
                     Simpan Perubahan
                 </button>
             </div>
