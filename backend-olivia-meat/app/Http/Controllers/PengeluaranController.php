@@ -20,7 +20,7 @@ class PengeluaranController extends Controller
     {
         $request->validate([
             'tgl_pengeluaran' => 'required|date',
-            'kategori_pengeluaran' => 'required|in:Makan,Pembelian Daging,Operasional,Transportasi,Lain-lain',
+            'kategori_pengeluaran' => 'required|in:Listrik,Makan,Plastik,Bensin,Gaji,Lain-lain',
             'nominal' => 'required|integer|min:1001',
             'keterangan' => 'required|string|min:1' // <-- Diubah ke min:1
         ], [
@@ -45,7 +45,7 @@ class PengeluaranController extends Controller
     {
         $request->validate([
             'tgl_pengeluaran' => 'required|date',
-            'kategori_pengeluaran' => 'required|in:Makan,Pembelian Daging,Operasional,Transportasi,Lain-lain',
+            'kategori_pengeluaran' => 'required|in:Listrik,Makan,Plastik,Bensin,Gaji,Lain-lain',
             'nominal' => 'required|integer|min:1001',
             'keterangan' => 'required|string|min:1' 
         ], [

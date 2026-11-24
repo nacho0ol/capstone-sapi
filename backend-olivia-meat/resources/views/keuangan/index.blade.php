@@ -7,7 +7,7 @@
     <div class="flex justify-between items-center">
         <div>
             <h1 class="text-xl font-bold text-gray-900">Keuangan & Laporan</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Analisis laba rugi, daftar pesanan, dan pengeluaran</p>
+            <p class="text-xs text-gray-500 mt-0.5">Analisis laba rugi, daftar pesanan, tagihan, dan pengeluaran operasional</p>
         </div>
         <button @click="showSetting = true" 
                 class="inline-flex items-center gap-2 bg-white hover:bg-[#FAE2E2] text-[#842529] border border-border-muted px-3 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 focus:outline-none" 
@@ -31,12 +31,12 @@
         <a href="{{ route('keuangan.index', ['tab' => 'piutang']) }}" 
            class="py-3 px-4 sm:px-6 text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 {{ $tab == 'piutang' ? 'border-b-2 border-[#842529] text-[#842529]' : 'text-gray-500 hover:text-gray-700' }}">
             <x-lucide-receipt class="w-4 h-4" />
-            <span>Piutang</span>
+            <span>Tagihan</span>
         </a>
         <a href="{{ route('keuangan.index', ['tab' => 'pengeluaran']) }}" 
            class="py-3 px-4 sm:px-6 text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 {{ $tab == 'pengeluaran' ? 'border-b-2 border-[#842529] text-[#842529]' : 'text-gray-500 hover:text-gray-700' }}">
             <x-lucide-wallet-cards class="w-4 h-4" />
-            <span>List Pengeluaran</span>
+            <span>Pengeluaran Operasional</span>
         </a>
     </div>
 
@@ -49,7 +49,6 @@
                 <input type="hidden" name="tab" value="labarugi">
                 
                 <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto flex-1">
-                    <!-- Dropdown Waktu Cepat -->
                     <div class="w-full sm:w-52">
                         <select name="filter_laba_waktu" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                             <option value="">Semua Waktu</option>
@@ -59,13 +58,11 @@
                         </select>
                     </div>
 
-                    <!-- Input Tanggal Spesifik -->
                     <div class="w-full sm:w-44">
                         <input type="date" name="filter_laba_tanggal" value="{{ request('filter_laba_tanggal') }}" 
                                class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                     </div>
 
-                    <!-- Tombol Terapkan -->
                     <button type="submit" class="w-full sm:w-auto bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
                         <x-lucide-filter class="w-3.5 h-3.5" />
                         <span>Filter</span>
@@ -89,9 +86,10 @@
                             <x-lucide-scale class="w-4 h-4 text-[#842529]" />
                             Estimasi Laba Bersih
                         </span>
-                        <h2 class="text-2xl sm:text-3xl font-extrabold text-[#842529] mt-1">
+                        <h2 class="text-2xl sm:text-3xl font-extrabold {{ $labaRugi >= 0 ? 'text-[#842529]' : 'text-rose-600' }} mt-1">
                             Rp {{ number_format($labaRugi, 0, ',', '.') }}
                         </h2>
+                        <p class="text-[11px] text-gray-400 mt-1">Uang Masuk Orderan − Dibayarkan ke Jagal − Pengeluaran Operasional</p>
                     </div>
                     <div class="w-12 h-12 bg-[#FAE2E2] rounded-2xl flex items-center justify-center flex-shrink-0">
                         <x-lucide-trending-up class="w-6 h-6 text-[#842529]" />
@@ -99,21 +97,38 @@
                 </div>
             </div>
 
-            <!-- Grid: Pemasukan vs Pengeluaran -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Grid 3 Komponen Laba Rugi -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- 1. Uang Masuk dari Orderan -->
                 <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-gray-500 mb-1">Total Pemasukan</p>
+                        <p class="text-xs font-medium text-gray-500 mb-1">Uang Masuk dari Orderan</p>
                         <p class="text-lg font-bold text-emerald-700">Rp {{ number_format($totalPemasukan, 0, ',', '.') }}</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Orderan berstatus Lunas</p>
                     </div>
                     <div class="w-10 h-10 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 flex-shrink-0">
                         <x-lucide-arrow-down-left class="w-5 h-5" />
                     </div>
                 </div>
+
+                <!-- 2. Yang Harus Dibayarkan ke Jagal -->
                 <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-gray-500 mb-1">Total Pengeluaran</p>
+                        <p class="text-xs font-medium text-gray-500 mb-1">Dibayarkan ke Jagal</p>
+                        <p class="text-lg font-bold text-[#842529]">Rp {{ number_format($totalBayarJagal, 0, ',', '.') }}</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Otomatis dari qty × modal</p>
+                    </div>
+                    <div class="w-10 h-10 bg-[#FAE2E2] border border-red-100 rounded-xl flex items-center justify-center text-[#842529] flex-shrink-0">
+                        <x-lucide-beef class="w-5 h-5" />
+                    </div>
+                </div>
+
+                <!-- 3. Pengeluaran Operasional -->
+                <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 mb-1">Pengeluaran Operasional</p>
                         <p class="text-lg font-bold text-amber-700">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</p>
+                        <p class="text-[10px] text-gray-400 mt-0.5">Listrik, makan, plastik, dll</p>
                     </div>
                     <div class="w-10 h-10 bg-amber-50 border border-amber-100 rounded-xl flex items-center justify-center text-amber-600 flex-shrink-0">
                         <x-lucide-arrow-up-right class="w-5 h-5" />
@@ -128,10 +143,8 @@
             
             <!-- FORM PENCARIAN & FILTER PESANAN -->
             <form action="{{ route('keuangan.index') }}" method="GET" class="bg-gray-50 border border-border-muted p-3 rounded-2xl mb-4 space-y-3">
-                <!-- INI YANG BIKIN TAB GAK LOMPAT -->
                 <input type="hidden" name="tab" value="riwayat"> 
                 
-                <!-- Baris 1: Search Text & Tombol Eksekusi -->
                 <div class="flex flex-col sm:flex-row items-center gap-2">
                     <div class="relative w-full sm:flex-1">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
@@ -140,7 +153,7 @@
                         <input type="text" 
                                name="search_pesanan" 
                                value="{{ request('search_pesanan') }}" 
-                               placeholder="Cari No. Nota, nama pelanggan, atau status bayar..." 
+                               placeholder="Cari No. Nota, pelanggan, status bayar, atau komplain..." 
                                class="w-full pl-9 pr-4 py-2.5 bg-white border border-border-muted rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                     </div>
 
@@ -160,9 +173,7 @@
                     </div>
                 </div>
 
-                <!-- Baris 2: Dropdown Filter Spesifik (Grid 4 Kolom) -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    <!-- Filter Waktu -->
                     <select name="filter_waktu" class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                         <option value="">Semua Waktu</option>
                         <option value="hari_ini" {{ request('filter_waktu') == 'hari_ini' ? 'selected' : '' }}>Hari Ini</option>
@@ -170,7 +181,6 @@
                         <option value="bulan_ini" {{ request('filter_waktu') == 'bulan_ini' ? 'selected' : '' }}>Bulan Ini</option>
                     </select>
 
-                    <!-- Filter Pelanggan -->
                     <select name="filter_pelanggan" class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                         <option value="">Semua Pelanggan</option>
                         @foreach($pelanggans ?? [] as $plg)
@@ -180,7 +190,6 @@
                         @endforeach
                     </select>
 
-                    <!-- Filter Status Bayar -->
                     <select name="filter_status_bayar" class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                         <option value="">Semua Pembayaran</option>
                         <option value="Lunas" {{ request('filter_status_bayar') == 'Lunas' ? 'selected' : '' }}>Lunas</option>
@@ -188,7 +197,6 @@
                         <option value="Unpaid" {{ request('filter_status_bayar') == 'Unpaid' ? 'selected' : '' }}>Unpaid</option>
                     </select>
 
-                    <!-- Filter Status Pesanan -->
                     <select name="filter_status_pesanan" class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                         <option value="">Semua Status</option>
                         <option value="Diterima" {{ request('filter_status_pesanan') == 'Diterima' ? 'selected' : '' }}>Diterima</option>
@@ -217,7 +225,7 @@
                     <div @click="showDetail = true" 
                          class="cursor-pointer bg-white border border-border-muted rounded-2xl p-4 text-xs shadow-sm flex justify-between items-center hover:border-gray-400 hover:shadow-md transition-all {{ $isCancelled ? 'opacity-75' : '' }}">
                         <div class="space-y-1">
-                            <div class="flex items-center gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <span class="font-bold text-[#842529] font-mono text-sm">{{ $p->id_pesanan }}</span>
                                 <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border {{ $statusBadgeClass }}">
                                     {{ $statusLabel }}
@@ -225,6 +233,11 @@
                                 <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border {{ $p->status_bayar == 'Lunas' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700' }}">
                                     {{ $p->status_bayar }}
                                 </span>
+                                @if(!empty($p->catatan))
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border bg-rose-50 border-rose-200 text-rose-700">
+                                        Ada Komplain / Catatan
+                                    </span>
+                                @endif
                             </div>
                             <p class="text-gray-500 flex flex-wrap items-center gap-x-3 gap-y-1">
                                 <span class="flex items-center gap-1">
@@ -246,7 +259,6 @@
                     <!-- MODAL DETAIL PESANAN -->
                     <div x-show="showDetail" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
                         <div @click.away="showDetail = false" class="bg-white rounded-2xl w-full max-w-md shadow-xl flex flex-col max-h-[90vh] border border-border-muted overflow-hidden">
-                            <!-- Header Modal -->
                             <div class="p-4 border-b border-border-muted flex justify-between items-center bg-gray-50">
                                 <div class="flex items-center gap-2">
                                     <x-lucide-file-text class="w-4 h-4 text-[#842529]" />
@@ -260,7 +272,6 @@
                                 </button>
                             </div>
                             
-                            <!-- Body Modal (Scrollable) -->
                             <div class="p-4 overflow-y-auto text-xs space-y-4">
                                 <div class="grid grid-cols-2 gap-3 text-xs bg-gray-50 p-3 rounded-xl border border-border-muted">
                                     <div>
@@ -303,15 +314,22 @@
                                     </div>
                                 </div>
                                 
-                                @if($p->catatan)
-                                    <div class="bg-amber-50 p-3 border border-amber-200 rounded-xl">
-                                        <span class="font-bold text-xs text-amber-800 uppercase flex items-center gap-1 mb-0.5">
-                                            <x-lucide-info class="w-3.5 h-3.5 text-amber-700" />
-                                            Catatan Pesanan:
-                                        </span>
-                                        <p class="text-xs text-amber-900 italic">{{ $p->catatan }}</p>
+                                <!-- Form Komplain / Catatan Pesanan -->
+                                <form action="{{ route('transaksi.komplain', $p->id_pesanan) }}" method="POST" class="bg-amber-50/70 p-3 border border-amber-200 rounded-xl space-y-2">
+                                    @csrf
+                                    @method('PUT')
+                                    <label class="font-bold text-xs text-amber-900 uppercase flex items-center gap-1">
+                                        <x-lucide-message-square-warning class="w-3.5 h-3.5 text-amber-700" />
+                                        <span>Komplain / Catatan Pesanan:</span>
+                                    </label>
+                                    <textarea name="catatan" rows="2" placeholder="Catat komplain pelanggan atau catatan khusus pesanan ini..."
+                                              class="w-full bg-white border border-amber-200 rounded-lg p-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#842529]">{{ $p->catatan }}</textarea>
+                                    <div class="flex justify-end">
+                                        <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors">
+                                            Simpan Komplain / Catatan
+                                        </button>
                                     </div>
-                                @endif
+                                </form>
                             </div>
 
                             <div class="p-4 border-t border-border-muted bg-gray-50 flex justify-between items-center">
@@ -353,7 +371,7 @@
                                 <div class="p-4 bg-sky-50 border-t border-sky-200 space-y-2">
                                     <h4 class="text-xs font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1.5">
                                         <x-lucide-credit-card class="w-4 h-4 text-sky-700" />
-                                        <span>Update Pembayaran Piutang Direct</span>
+                                        <span>Update Pembayaran Tagihan</span>
                                     </h4>
                                     
                                     <div class="flex justify-between text-xs text-sky-800">
@@ -386,7 +404,6 @@
                                                    class="w-full bg-white border border-sky-300 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all" 
                                                    placeholder="Masukkan nominal bayar..." required>
                                             
-                                            <!-- Hidden input mengirim nominal murni ke database -->
                                             <input type="hidden" name="nominal_bayar" :value="nominalRaw">
                                         </div>
 
@@ -403,33 +420,15 @@
             @endforeach
         </div>
 
-    <!-- ================= ISI TAB 3: PIUTANG ================= -->
+    <!-- ================= ISI TAB 3: TAGIHAN ================= -->
     @elseif($tab == 'piutang')
         <div class="space-y-4">
-            <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-[#FAE2E2] rounded-xl flex items-center justify-center text-[#842529]">
-                        <x-lucide-receipt class="w-5 h-5" />
-                    </div>
-                    <div>
-                        <h3 class="text-xs font-bold text-gray-800">Manajemen Halaman Piutang</h3>
-                        <p class="text-[11px] text-gray-500">Kelola rincian jatuh tempo dan riwayat cicilan piutang</p>
-                    </div>
-                </div>
-                <a href="{{ route('piutang.index') }}" 
-                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2.5 rounded-xl font-bold shadow-sm transition-all active:scale-95">
-                    <span>Kelola & Bayar Piutang</span>
-                    <x-lucide-arrow-right class="w-4 h-4" />
-                </a>
-            </div>
-
-            <!-- FORM FILTER PIUTANG -->
-            <form action="{{ route('keuangan.index') }}" method="GET" class="bg-white border border-border-muted p-3 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center gap-2">
+            <!-- FORM FILTER TAGIHAN -->
+            <form action="{{ route('keuangan.index') }}" method="GET" class="bg-white border border-border-muted p-3.5 rounded-2xl shadow-sm space-y-2.5">
                 <input type="hidden" name="tab" value="piutang">
 
-                <!-- Filter Pelanggan -->
-                <div class="w-full sm:flex-1">
-                    <select name="filter_piutang_pelanggan" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <select name="filter_piutang_pelanggan" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                         <option value="">Semua Pelanggan</option>
                         @foreach($pelanggans ?? [] as $plg)
                             <option value="{{ $plg->id_pelanggan }}" {{ request('filter_piutang_pelanggan') == $plg->id_pelanggan ? 'selected' : '' }}>
@@ -437,20 +436,15 @@
                             </option>
                         @endforeach
                     </select>
-                </div>
 
-                <!-- Filter Status Piutang -->
-                <div class="w-full sm:w-auto sm:min-w-[150px]">
-                    <select name="filter_status_piutang" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                    <select name="filter_status_piutang" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                         <option value="">Semua Status</option>
                         <option value="Belum Lunas" {{ request('filter_status_piutang') == 'Belum Lunas' ? 'selected' : '' }}>Belum Lunas</option>
+                        <option value="Sebagian" {{ request('filter_status_piutang') == 'Sebagian' ? 'selected' : '' }}>Sebagian (Cicilan)</option>
                         <option value="Lunas" {{ request('filter_status_piutang') == 'Lunas' ? 'selected' : '' }}>Lunas</option>
                     </select>
-                </div>
 
-                <!-- Filter Status Jatuh Tempo -->
-                <div class="w-full sm:w-auto sm:min-w-[160px]">
-                    <select name="filter_jatuh_tempo" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                    <select name="filter_jatuh_tempo" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                         <option value="">Semua Jatuh Tempo</option>
                         <option value="overdue" {{ request('filter_jatuh_tempo') == 'overdue' ? 'selected' : '' }}>Terlambat (Overdue)</option>
                         <option value="hari_ini" {{ request('filter_jatuh_tempo') == 'hari_ini' ? 'selected' : '' }}>Jatuh Tempo Hari Ini</option>
@@ -458,70 +452,195 @@
                     </select>
                 </div>
 
-                <!-- Tombol Aksi -->
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <button type="submit" class="w-full sm:w-auto bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
-                        <x-lucide-filter class="w-3.5 h-3.5" />
-                        <span>Filter</span>
-                    </button>
-
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
                     @if(request()->filled('filter_piutang_pelanggan') || request()->filled('filter_status_piutang') || request()->filled('filter_jatuh_tempo'))
                         <a href="{{ route('keuangan.index', ['tab' => 'piutang']) }}" 
-                           class="w-full sm:w-auto bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-3 py-2 rounded-xl font-bold transition-all flex items-center justify-center gap-1">
+                           class="w-full sm:w-auto justify-center bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-3.5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-1">
                             <x-lucide-rotate-ccw class="w-3.5 h-3.5" />
                             <span>Reset</span>
                         </a>
                     @endif
+
+                    <button type="submit" class="w-full sm:w-auto justify-center bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2.5 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center gap-1.5">
+                        <x-lucide-filter class="w-3.5 h-3.5" />
+                        <span>Filter</span>
+                    </button>
                 </div>
             </form>
 
-            <!-- DAFTAR PIUTANG -->
-            <div class="space-y-2">
+            <!-- DAFTAR TAGIHAN -->
+            <div class="space-y-3">
                 @forelse($piutang as $pi)
-                    <div class="bg-white border border-border-muted rounded-2xl p-4 text-xs shadow-sm flex justify-between items-center">
-                        <div class="space-y-1">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-gray-900 font-mono">{{ $pi->id_pesanan }}</span>
-                                <span class="text-gray-500">•</span>
-                                <span class="text-gray-700 font-semibold">{{ $pi->pesanan->pelanggan->nama_pelanggan ?? 'Pelanggan Umum' }}</span>
-                            </div>
-                            <p class="text-gray-500">
-                                Total Tagihan: <strong class="text-gray-800">Rp {{ number_format($pi->total_tagihan, 0, ',', '.') }}</strong>
-                                @if(!empty($pi->tgl_jatuh_tempo))
-                                    <span class="text-gray-400 ml-2">| Jatuh Tempo: {{ date('d M Y', strtotime($pi->tgl_jatuh_tempo)) }}</span>
+                    @php
+                        $terbayar = (int) ($pi->jumlah_terbayar ?? 0);
+                        $sisaTagihan = max(0, (int) $pi->total_tagihan - $terbayar);
+                        $isLunas = $pi->status_piutang == 'Lunas' || $sisaTagihan <= 0;
+                        $isOverdue = !$isLunas && !empty($pi->tgl_jatuh_tempo) && \Carbon\Carbon::parse($pi->tgl_jatuh_tempo)->lt(\Carbon\Carbon::today());
+                        $hasModalError = session('error_modal_id') == $pi->id_pesanan && $errors->any();
+                    @endphp
+
+                    <div x-data="{
+                        openBayar: {{ $hasModalError ? 'true' : 'false' }},
+                        sisaMaks: {{ $sisaTagihan }},
+                        bayarRaw: '{{ $hasModalError ? old('nominal_bayar', '') : '' }}',
+                        bayarFormatted: '',
+                        formatRupiah(val) {
+                            let number = String(val).replace(/\D/g, '');
+                            if (!number) return { raw: '', formatted: '' };
+                            if (parseInt(number) > this.sisaMaks) number = String(this.sisaMaks);
+                            return { raw: number, formatted: new Intl.NumberFormat('id-ID').format(number) };
+                        },
+                        isiLunas() {
+                            let res = this.formatRupiah(this.sisaMaks);
+                            this.bayarRaw = res.raw;
+                            this.bayarFormatted = res.formatted;
+                        },
+                        init() {
+                            if (this.bayarRaw) {
+                                this.bayarFormatted = this.formatRupiah(this.bayarRaw).formatted;
+                            }
+                        }
+                    }" class="bg-white border border-border-muted rounded-2xl p-4 text-xs shadow-sm space-y-3">
+                        
+                        <!-- Baris Atas: ID Order, Status & Jatuh Tempo -->
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="px-2.5 py-1 rounded-lg bg-[#FAE2E2] text-[#842529] font-bold font-mono">
+                                    {{ $pi->id_pesanan }}
+                                </span>
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold border {{ $isLunas ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : ($pi->status_piutang == 'Sebagian' ? 'bg-amber-50 border-amber-200 text-amber-700' : 'bg-rose-50 border-rose-200 text-rose-700') }}">
+                                    {{ $isLunas ? 'Lunas' : $pi->status_piutang }}
+                                </span>
+                                @if($isOverdue)
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 text-rose-800">
+                                        Terlambat
+                                    </span>
                                 @endif
-                            </p>
+                            </div>
+
+                            @if(!empty($pi->tgl_jatuh_tempo))
+                                <span class="text-[11px] {{ $isOverdue ? 'text-rose-600 font-semibold' : 'text-gray-500' }} flex items-center gap-1">
+                                    <x-lucide-calendar class="w-3.5 h-3.5" />
+                                    <span>Jatuh Tempo: {{ date('d M Y', strtotime($pi->tgl_jatuh_tempo)) }}</span>
+                                </span>
+                            @endif
                         </div>
-                        <span class="px-2.5 py-1 rounded-md text-[10px] font-bold border {{ $pi->status_piutang == 'Lunas' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-rose-50 border-rose-200 text-rose-700' }}">
-                            {{ $pi->status_piutang }}
-                        </span>
+
+                        <!-- Nama Pelanggan -->
+                        <div class="flex items-center gap-1.5 text-gray-800 font-bold text-sm">
+                            <x-lucide-user class="w-4 h-4 text-gray-400" />
+                            <span>{{ $pi->pesanan->pelanggan->nama_pelanggan ?? 'Pelanggan Umum' }}</span>
+                        </div>
+
+                        <!-- Box Nominal & Tombol Bayar -->
+                        <div class="bg-gray-50 border border-border-muted rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="space-y-1">
+                                <p class="text-gray-500">
+                                    Total Tagihan: <strong class="text-gray-900">Rp {{ number_format($pi->total_tagihan, 0, ',', '.') }}</strong>
+                                </p>
+                                <p class="text-gray-500">
+                                    Jumlah Terbayar: <strong class="text-emerald-700">Rp {{ number_format($terbayar, 0, ',', '.') }}</strong>
+                                    @if(!$isLunas)
+                                        <span class="mx-1.5 text-gray-300">|</span>
+                                        <span>Sisa: <strong class="text-rose-600">Rp {{ number_format($sisaTagihan, 0, ',', '.') }}</strong></span>
+                                    @endif
+                                </p>
+                            </div>
+
+                            @if(!$isLunas)
+                                <button type="button" @click="openBayar = true"
+                                        style="background-color: #059669;"
+                                        class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 hover:opacity-90 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm transition-all active:scale-95 shrink-0">
+                                    <x-lucide-banknote class="w-4 h-4" />
+                                    <span>Bayar</span>
+                                </button>
+                            @else
+                                <span class="inline-flex items-center justify-center gap-1 text-emerald-700 font-bold bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl text-[11px]">
+                                    <x-lucide-check-circle-2 class="w-3.5 h-3.5" />
+                                    <span>Sudah Lunas</span>
+                                </span>
+                            @endif
+                        </div>
+
+                        <!-- MODAL PEMBAYARAN TAGIHAN -->
+                        @if(!$isLunas)
+                            <div x-show="openBayar" x-cloak style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                                <div @click.away="openBayar = false" class="bg-white rounded-2xl shadow-xl w-full max-w-md border border-border-muted overflow-hidden text-left">
+                                    <div class="flex justify-between items-center border-b border-border-muted p-4">
+                                        <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+                                            <x-lucide-banknote class="w-4 h-4 text-emerald-600" />
+                                            <span>Catat Pembayaran Tagihan</span>
+                                        </h3>
+                                        <button type="button" @click="openBayar = false" class="text-gray-400 hover:text-[#842529] p-1 rounded-lg">
+                                            <x-lucide-x class="w-5 h-5" />
+                                        </button>
+                                    </div>
+
+                                    <form action="{{ route('piutang.bayar', $pi->id_pesanan) }}" method="POST" class="p-4 space-y-3">
+                                        @csrf
+
+                                        @if($hasModalError)
+                                            <div class="bg-rose-50 border border-rose-200 text-rose-700 px-3 py-2 rounded-xl text-xs">
+                                                <ul class="list-disc pl-4 space-y-0.5">
+                                                    @foreach($errors->all() as $err)
+                                                        <li>{{ $err }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
+
+                                        <div class="bg-gray-50 border border-border-muted rounded-xl p-3 space-y-1 text-xs">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-500">Pelanggan / Order:</span>
+                                                <strong class="text-gray-800">{{ $pi->pesanan->pelanggan->nama_pelanggan ?? 'Umum' }} ({{ $pi->id_pesanan }})</strong>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-500">Sisa Tagihan:</span>
+                                                <strong class="text-rose-600">Rp {{ number_format($sisaTagihan, 0, ',', '.') }}</strong>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <div class="flex items-center justify-between mb-1">
+                                                <label class="text-xs font-semibold text-gray-700">Nominal Pembayaran</label>
+                                                <button type="button" @click="isiLunas()" class="text-[11px] font-bold text-[#842529] hover:underline">
+                                                    Lunasi Sisa (Rp {{ number_format($sisaTagihan, 0, ',', '.') }})
+                                                </button>
+                                            </div>
+                                            <input type="text" x-model="bayarFormatted"
+                                                   @input="let res = formatRupiah($event.target.value); bayarRaw = res.raw; bayarFormatted = res.formatted;"
+                                                   placeholder="Minimal Rp 1.000..." required
+                                                   class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                                            <input type="hidden" name="nominal_bayar" :value="bayarRaw">
+                                        </div>
+
+                                        <button type="submit" class="w-full bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold text-xs shadow-md flex items-center justify-center gap-2">
+                                            <x-lucide-check-circle-2 class="w-4 h-4" />
+                                            <span>Simpan Pembayaran</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 @empty
                     <div class="text-center bg-white rounded-2xl border border-border-muted py-12 shadow-sm">
                         <x-lucide-receipt class="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                        <p class="text-gray-400 text-xs">Tidak ada data piutang yang sesuai dengan filter.</p>
+                        <p class="text-gray-400 text-xs">Tidak ada data tagihan yang sesuai dengan filter.</p>
                     </div>
                 @endforelse
             </div>
         </div>
-        
 
-        <!-- ================= ISI TAB 4: PENGELUARAN ================= -->
+
+    <!-- ================= ISI TAB 4: PENGELUARAN OPERASIONAL ================= -->
     @else
         <div x-data="{ 
-            // Cek jika ada error validasi di Laravel, otomatis buka modal tambah
             showAdd: {{ $errors->any() && !old('id_pengeluaran') ? 'true' : 'false' }},
-            
-            // Cek jika ada error validasi di Edit (biasanya bawa hidden input id_pengeluaran)
             showEdit: {{ $errors->any() && old('id_pengeluaran') ? 'true' : 'false' }}, 
-            
             editData: { id_pengeluaran: '', tgl_pengeluaran: '', kategori_pengeluaran: '', nominal: '', keterangan: '' },
-            
-            // Variabel Format Rupiah Tambah (bawa nilai 'old' jika ada error)
             nominalAddRaw: '{{ old('nominal') }}',
             nominalAddFormatted: '{{ old('nominal') ? number_format(old('nominal'), 0, ',', '.') : '' }}',
-            
-            // Variabel Format Rupiah Edit
             nominalEditRaw: '',
             nominalEditFormatted: '',
 
@@ -552,29 +671,25 @@
             }
         }" class="space-y-4">
             
-            <!-- TOMBOL TAMBAH PENGELUARAN -->
-            <!-- FORM FILTER & TOMBOL TAMBAH -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 
-                <!-- Form Filter -->
+                <!-- Form Filter Pengeluaran -->
                 <form action="{{ route('keuangan.index') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto flex-1">
                     <input type="hidden" name="tab" value="pengeluaran">
                     
-                    <!-- Filter Tanggal -->
                     <div class="w-full sm:max-w-[150px]">
                         <input type="date" name="filter_tanggal" value="{{ request('filter_tanggal') }}" 
                                class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                     </div>
 
-                    <!-- Filter Kategori -->
                     <div class="w-full sm:max-w-[180px]">
                         <select name="filter_kategori" class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                             <option value="">Semua Kategori</option>
+                            <option value="Listrik" {{ request('filter_kategori') == 'Listrik' ? 'selected' : '' }}>Listrik</option>
                             <option value="Makan" {{ request('filter_kategori') == 'Makan' ? 'selected' : '' }}>Makan</option>
-                            <option value="Pembelian Daging" {{ request('filter_kategori') == 'Pembelian Daging' ? 'selected' : '' }}>Pembelian Daging</option>
-                            <option value="Operasional" {{ request('filter_kategori') == 'Operasional' ? 'selected' : '' }}>Operasional</option>
-                            <option value="Transportasi" {{ request('filter_kategori') == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
-                            <option value="Lain-lain" {{ request('filter_kategori') == 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
+                            <option value="Plastik" {{ request('filter_kategori') == 'Plastik' ? 'selected' : '' }}>Plastik</option>
+                            <option value="Bensin" {{ request('filter_kategori') == 'Bensin' ? 'selected' : '' }}>Bensin</option>
+                            <option value="Gaji" {{ request('filter_kategori') == 'Gaji' ? 'selected' : '' }}>Gaji</option>
                         </select>
                     </div>
 
@@ -594,7 +709,6 @@
                     </div>
                 </form>
 
-                <!-- Tombol Tambah -->
                 <button @click="showAdd = true; nominalAddRaw = ''; nominalAddFormatted = '';" 
                         class="w-full sm:w-auto inline-flex justify-center items-center gap-1.5 bg-[#842529] hover:bg-red-900 text-white text-xs py-2 px-4 rounded-xl font-bold shadow-sm transition-all active:scale-95">
                     <x-lucide-plus-circle class="w-4 h-4 text-white" />
@@ -627,29 +741,25 @@
                                 <span>Edit</span>
                             </button>
                             
-                            <form action="{{ url('/pengeluaran/' . $pen->id_pengeluaran) }}" method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button" 
-                                        @click="$dispatch('confirm-action', { 
-                                            action: '{{ url('/pengeluaran/' . $pen->id_pengeluaran) }}', 
-                                            title: 'Hapus Pengeluaran', 
-                                            message: 'Apakah Anda yakin ingin menghapus catatan pengeluaran ini?', 
-                                            method: 'DELETE',
-                                            confirmText: 'Ya, Hapus',
-                                            confirmClass: 'bg-rose-600 hover:bg-rose-700'
-                                        })"
-                                        class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
-                                    <x-lucide-trash-2 class="w-3.5 h-3.5" />
-                                    <span>Hapus</span>
-                                </button>
-                            </form>
+                            <button type="button" 
+                                    @click="$dispatch('confirm-action', { 
+                                        action: '{{ url('/pengeluaran/' . $pen->id_pengeluaran) }}', 
+                                        title: 'Hapus Pengeluaran', 
+                                        message: 'Apakah Anda yakin ingin menghapus catatan pengeluaran ini?', 
+                                        method: 'DELETE',
+                                        confirmText: 'Ya, Hapus',
+                                        confirmClass: 'bg-rose-600 hover:bg-rose-700'
+                                    })"
+                                    class="inline-flex items-center gap-1 text-rose-700 font-semibold px-3 py-1.5 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors text-xs">
+                                <x-lucide-trash-2 class="w-3.5 h-3.5" />
+                                <span>Hapus</span>
+                            </button>
                         </div>
                     </div>
                 @empty
                     <div class="text-center bg-white rounded-2xl border border-border-muted py-12 shadow-sm">
                         <x-lucide-wallet class="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                        <p class="text-gray-400 text-xs">Belum ada catatan pengeluaran.</p>
+                        <p class="text-gray-400 text-xs">Belum ada catatan pengeluaran operasional.</p>
                     </div>
                 @endforelse
             </div>
@@ -662,7 +772,7 @@
                     </button>
                     <h3 class="font-bold text-gray-800 mb-4 text-sm border-b border-border-muted pb-3 flex items-center gap-2">
                         <x-lucide-plus-circle class="w-4 h-4 text-[#842529]" />
-                        <span>Tambah Pengeluaran Baru</span>
+                        <span>Tambah Pengeluaran Operasional</span>
                     </h3>
                     
                     <form action="{{ route('pengeluaran.store') }}" method="POST" class="space-y-3">
@@ -691,19 +801,17 @@
                             <label class="block text-xs text-gray-700 font-semibold mb-1">Kategori</label>
                             <select name="kategori_pengeluaran" 
                                     class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
+                                <option value="Listrik" {{ old('kategori_pengeluaran') == 'Listrik' ? 'selected' : '' }}>Listrik</option>
                                 <option value="Makan" {{ old('kategori_pengeluaran') == 'Makan' ? 'selected' : '' }}>Makan</option>
-                                <option value="Pembelian Daging" {{ old('kategori_pengeluaran') == 'Pembelian Daging' ? 'selected' : '' }}>Pembelian Daging</option>
-                                <option value="Operasional" {{ old('kategori_pengeluaran') == 'Operasional' ? 'selected' : '' }}>Operasional</option>
-                                <option value="Transportasi" {{ old('kategori_pengeluaran') == 'Transportasi' ? 'selected' : '' }}>Transportasi</option>
-                                <option value="Lain-lain" {{ old('kategori_pengeluaran') == 'Lain-lain' ? 'selected' : '' }}>Lain-lain</option>
+                                <option value="Plastik" {{ old('kategori_pengeluaran') == 'Plastik' ? 'selected' : '' }}>Plastik</option>
+                                <option value="Bensin" {{ old('kategori_pengeluaran') == 'Bensin' ? 'selected' : '' }}>Bensin</option>
+                                <option value="Gaji" {{ old('kategori_pengeluaran') == 'Gaji' ? 'selected' : '' }}>Gaji</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-xs text-gray-700 font-semibold mb-1">Nominal (Rp)</label>
-                            <!-- Input tampilan (Tipe Teks) -->
                             <input type="text" x-model="nominalAddFormatted" @input="onNominalAddInput($event)" placeholder="Contoh: 50.000" 
                                    class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
-                            <!-- Input rahasia (Angka murni ke database) -->
                             <input type="hidden" name="nominal" :value="nominalAddRaw">
                         </div>
                         <div>
@@ -731,24 +839,9 @@
                     </h3>
                     
                     <form :action="'{{ url('/pengeluaran') }}/' + editData.id_pengeluaran" method="POST" class="space-y-3">
-                        @if ($errors->any() && old('id_pengeluaran'))
-                            <div class="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-xl text-xs mb-3 space-y-1">
-                                <div class="font-bold flex items-center gap-1.5">
-                                    <x-lucide-alert-circle class="w-4 h-4 text-red-600 flex-shrink-0" />
-                                    <span>Gagal Update:</span>
-                                </div>
-                                <ul class="list-disc pl-5 space-y-0.5">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="tab" value="pengeluaran">
-                        
-                        <!-- Hidden input agar sistem tahu kalau error ini berasal dari modal edit -->
                         <input type="hidden" name="id_pengeluaran" x-model="editData.id_pengeluaran">
                         
                         <div>
@@ -760,11 +853,11 @@
                             <label class="block text-xs text-gray-700 font-semibold mb-1">Kategori</label>
                             <select name="kategori_pengeluaran" x-model="editData.kategori_pengeluaran" 
                                     class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
+                                <option value="Listrik">Listrik</option>
                                 <option value="Makan">Makan</option>
-                                <option value="Pembelian Daging">Pembelian Daging</option>
-                                <option value="Operasional">Operasional</option>
-                                <option value="Transportasi">Transportasi</option>
-                                <option value="Lain-lain">Lain-lain</option>
+                                <option value="Plastik">Plastik</option>
+                                <option value="Bensin">Bensin</option>
+                                <option value="Gaji">Gaji</option>
                             </select>
                         </div>
                         <div>
@@ -799,7 +892,7 @@
                 <x-lucide-settings class="w-4 h-4 text-[#842529]" />
                 <span>Pengaturan Notifikasi Telegram</span>
             </h3>
-            <p class="text-[11px] text-gray-500 mb-4 border-b border-border-muted pb-3">Atur bot Telegram dan jadwal pengingat piutang pelanggan.</p>
+            <p class="text-[11px] text-gray-500 mb-4 border-b border-border-muted pb-3">Atur bot Telegram dan jadwal pengingat tagihan pelanggan.</p>
             
             <form action="{{ url('/pengaturan/notifikasi') }}" method="POST" class="space-y-3 text-xs">
                 @csrf
@@ -857,7 +950,7 @@
                     <label class="block text-gray-700 font-bold mb-1">Template Pesan Tagihan (WA/Telegram)</label>
                     <p class="text-[10px] text-gray-400 mb-1">Gunakan <b>{nama}</b>, <b>{tagihan}</b>, <b>{jatuh_tempo}</b> untuk variabel otomatis.</p>
                     <textarea name="template_tagihan" rows="3" 
-                              class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-[#842529]" required>{{ $pengaturan->template_tagihan ?? "Halo {nama},\nTagihan piutang Anda sebesar Rp {tagihan} akan jatuh tempo pada {jatuh_tempo}. Mohon segera melakukan pembayaran." }}</textarea>
+                              class="w-full bg-gray-50 border border-border-muted rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-[#842529]" required>{{ $pengaturan->template_tagihan ?? "Halo {nama},\nTagihan Anda sebesar Rp {tagihan} akan jatuh tempo pada {jatuh_tempo}. Mohon segera melakukan pembayaran." }}</textarea>
                 </div>
 
                 <div class="pt-2">

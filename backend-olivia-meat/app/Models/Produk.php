@@ -20,4 +20,6 @@ class Produk extends Model
         'nama_jagal',
         'is_deleted'
     ];
+
+    public function jagal() { return $this->belongsTo(Jagal::class, 'id_jagal', 'id_jagal'); }
 }

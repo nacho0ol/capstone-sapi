@@ -48,6 +48,52 @@
         </button>
     </div>
 
+    <!-- FORM FILTER ORDERAN -->
+    <form action="{{ route('transaksi.index') }}" method="GET" class="bg-white border border-border-muted p-3 rounded-2xl shadow-sm space-y-2">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+            <select name="pelanggan_id" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                <option value="">Semua Pelanggan</option>
+                @foreach($pelanggans as $plg)
+                    <option value="{{ $plg->id_pelanggan }}" {{ request('pelanggan_id') == $plg->id_pelanggan ? 'selected' : '' }}>
+                        {{ $plg->nama_pelanggan }}
+                    </option>
+                @endforeach
+            </select>
+
+            <input type="date" name="tanggal" value="{{ request('tanggal') }}" 
+                   class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+
+            <select name="metode_bayar" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                <option value="">Semua Metode Bayar</option>
+                <option value="Tunai" {{ request('metode_bayar') == 'Tunai' ? 'selected' : '' }}>Tunai</option>
+                <option value="Transfer" {{ request('metode_bayar') == 'Transfer' ? 'selected' : '' }}>Transfer</option>
+                <option value="Tempo" {{ request('metode_bayar') == 'Tempo' ? 'selected' : '' }}>Tempo</option>
+            </select>
+
+            <select name="status_bayar" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
+                <option value="">Semua Status Bayar</option>
+                <option value="Lunas" {{ request('status_bayar') == 'Lunas' ? 'selected' : '' }}>Lunas</option>
+                <option value="DP" {{ request('status_bayar') == 'DP' ? 'selected' : '' }}>DP</option>
+                <option value="Unpaid" {{ request('status_bayar') == 'Unpaid' ? 'selected' : '' }}>Unpaid</option>
+            </select>
+        </div>
+
+        <div class="flex items-center justify-end gap-2">
+            @if(request()->anyFilled(['pelanggan_id', 'tanggal', 'metode_bayar', 'status_bayar']))
+                <a href="{{ route('transaksi.index') }}" 
+                   class="bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs px-3 py-2 rounded-xl font-semibold flex items-center gap-1 transition-all">
+                    <x-lucide-rotate-ccw class="w-3.5 h-3.5" />
+                    <span>Reset</span>
+                </a>
+            @endif
+            <button type="submit" 
+                    class="bg-[#842529] hover:bg-red-900 text-white text-xs px-4 py-2 rounded-xl font-bold shadow-sm flex items-center gap-1.5 transition-all active:scale-95">
+                <x-lucide-filter class="w-3.5 h-3.5" />
+                <span>Filter</span>
+            </button>
+        </div>
+    </form>
+
     <!-- MODAL BUAT PESANAN BARU -->
     <div x-show="showForm" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
         <div @click.away="showForm = false" class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-5 shadow-xl relative border border-border-muted">
@@ -213,7 +259,7 @@
                 <div class="pt-2 flex gap-2">
                     <button type="button" @click="showPelangganForm = false" class="flex-1 border border-border-muted text-gray-700 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-50">Batal</button>
                     <button type="button" @click="
-                        fetch('{{ route('master.pelanggan.store') }}', {
+                        fetch('{{ route('pelanggan.store') }}', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -222,16 +268,19 @@
                             },
                             body: JSON.stringify(newPelanggan)
                         })
-                        .then(res => res.json())
-                        .then(data => {
-                            if(data.data) {
+                        .then(async res => {
+                            const data = await res.json();
+                            if (res.ok && data.data) {
                                 pelanggans.push(data.data);
                                 selectedPelanggan = String(data.data.id_pelanggan);
                                 showPelangganForm = false;
                                 newPelanggan = {nama_pelanggan: '', no_telp: '', alamat: ''};
                                 alert('Pelanggan berhasil ditambahkan!');
+                            } else if (data.errors) {
+                                const firstError = Object.values(data.errors)[0][0];
+                                alert(firstError);
                             } else {
-                                alert(data.message || 'Gagal menyimpan pelanggan, cek validasi.');
+                                alert(data.message || 'Gagal menyimpan pelanggan, cek kembali inputan.');
                             }
                         })
                         .catch(err => alert('Terjadi kesalahan koneksi!'));

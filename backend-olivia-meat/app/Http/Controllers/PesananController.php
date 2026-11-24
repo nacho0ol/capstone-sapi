@@ -29,6 +29,9 @@ class PesananController extends Controller
         if ($request->filled('metode_bayar')) {
             $query->where('metode_bayar', $request->metode_bayar);
         }
+        if ($request->filled('status_bayar')) {
+            $query->where('status_bayar', $request->status_bayar);
+        }
 
         $pesanan = $query->orderBy('tgl_order', 'desc')->orderBy('id_pesanan', 'desc')->get();
 
@@ -479,4 +482,17 @@ class PesananController extends Controller
 
         return 'Terjadi kesalahan: ' . $msg;
     }
+
+    public function updateKomplain(Request $request, $id)
+{
+    $request->validate([
+        'catatan' => 'nullable|string',
+    ]);
+
+    Pesanan::where('id_pesanan', $id)->update([
+        'catatan' => $request->catatan,
+    ]);
+
+    return redirect()->back()->with('success', 'Komplain / catatan pesanan berhasil diperbarui!');
+}
 }

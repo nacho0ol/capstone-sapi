@@ -97,20 +97,21 @@
                 </div>
             </div>
 
+            <!-- MULAI GANTI DARI SINI (BARIS 102) -->
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Metode Bayar</label>
                 <select name="metode_bayar" x-model="metodeBayar"
                         class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
                     <option value="Tunai" {{ old('metode_bayar', $pesanan->metode_bayar) == 'Tunai' ? 'selected' : '' }}>Tunai</option>
                     <option value="Transfer" {{ old('metode_bayar', $pesanan->metode_bayar) == 'Transfer' ? 'selected' : '' }}>Transfer</option>
-                    <option value="Tempo" {{ old('metode_bayar', $pesanan->metode_bayar) == 'Tempo' ? 'selected' : '' }}>Tempo (Piutang)</option>
+                    <option value="Tempo" {{ old('metode_bayar', $pesanan->metode_bayar) == 'Tempo' ? 'selected' : '' }}>Tempo (Tagihan)</option>
                 </select>
 
-                <!-- Box Input Tempo & Piutang -->
+                <!-- Box Input Tempo & Tagihan -->
                 <div x-show="metodeBayar === 'Tempo'" x-cloak class="mt-2.5 bg-sky-50 border border-sky-200 p-3 rounded-xl space-y-2" x-transition>
                     <h4 class="text-[11px] font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1">
                         <x-lucide-receipt class="w-3.5 h-3.5 text-sky-700" />
-                        <span>Data Piutang & Jatuh Tempo</span>
+                        <span>Data Tagihan & Jatuh Tempo</span>
                     </h4>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div>
@@ -119,11 +120,22 @@
                                    value="{{ old('tgl_jatuh_tempo', $pesanan->piutang->tgl_jatuh_tempo ?? date('Y-m-d', strtotime($pesanan->tgl_order . ' +7 days'))) }}" 
                                    class="w-full text-xs bg-white border border-sky-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
                         </div>
-                        <div>
+                        <div x-data="{
+                            dpRaw: '{{ old('jumlah_terbayar', (int) ($pesanan->piutang->jumlah_terbayar ?? 0)) }}',
+                            dpFormatted: '{{ number_format((int) old('jumlah_terbayar', $pesanan->piutang->jumlah_terbayar ?? 0), 0, ',', '.') }}',
+                            formatRupiah(val) {
+                                let number = String(val).replace(/\D/g, '');
+                                if (!number) return { raw: '0', formatted: '' };
+                                return { raw: number, formatted: new Intl.NumberFormat('id-ID').format(number) };
+                            }
+                        }">
                             <label class="block text-[10px] text-sky-800 font-semibold mb-1">DP / Telah Dibayar (Rp)</label>
-                            <input type="number" name="jumlah_terbayar" min="0"
-                                   value="{{ old('jumlah_terbayar', $pesanan->piutang->jumlah_terbayar ?? 0) }}" 
+                            <input type="text"
+                                   x-model="dpFormatted"
+                                   @input="let res = formatRupiah($event.target.value); dpRaw = res.raw; dpFormatted = res.formatted;"
+                                   placeholder="0"
                                    class="w-full text-xs bg-white border border-sky-300 rounded-xl p-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                            <input type="hidden" name="jumlah_terbayar" :value="dpRaw">
                         </div>
                     </div>
                 </div>
@@ -132,7 +144,7 @@
                     <div class="mt-2.5 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
                         <div class="flex items-center gap-1.5 font-bold text-amber-800">
                             <x-lucide-info class="w-4 h-4 text-amber-600 flex-shrink-0" />
-                            <span>Informasi Status Piutang Saat Ini</span>
+                            <span>Informasi Status Tagihan Saat Ini</span>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 text-[11px]">
                             <div><span class="text-amber-700 font-medium">Status:</span> <strong>{{ $pesanan->piutang->status_piutang }}</strong></div>
@@ -142,6 +154,7 @@
                     </div>
                 @endif
             </div>
+            <!-- SAMPAI SINI -->
 
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Catatan (Opsional)</label>

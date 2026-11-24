@@ -6,64 +6,74 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PesananController;
 use App\Http\Controllers\PiutangController;
 use App\Http\Controllers\PengeluaranController;
-use App\Http\Controllers\MasterDataController;
+use App\Http\Controllers\ProdukController;
+use App\Http\Controllers\PelangganController;
+use App\Http\Controllers\PemasokanDagingController;
 use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\ProfilController;
 
-// Rute Autentikasi Pengguna (Sesuai Proposal Bab 2: Activity Diagram Login)
-    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+// Rute Autentikasi Pengguna
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
-    Route::get('/forgot-password', [AuthController::class, 'showLinkRequestForm'])->name('password.request')->middleware('guest');
-    Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email')->middleware('guest');
-    Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset')->middleware('guest');
-    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update')->middleware('guest');
+Route::get('/forgot-password', [AuthController::class, 'showLinkRequestForm'])->name('password.request')->middleware('guest');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLinkEmail'])->name('password.email')->middleware('guest');
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset')->middleware('guest');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update')->middleware('guest');
+
 // Rute yang Memerlukan Hak Akses Login
-    Route::middleware('auth')->group(function () {
+Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-
-    // Halaman Utama / Dashboard (Ringkasan Keuangan & Laba Rugi)
+    // 1. Beranda
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Rute Transaksi Pesanan (Create & Read)
+    // 2. Orderan (Transaksi Pesanan)
     Route::get('/transaksi', [PesananController::class, 'index'])->name('transaksi.index');
     Route::post('/transaksi/store', [PesananController::class, 'store'])->name('transaksi.store');
     Route::get('/transaksi/{id}/edit', [PesananController::class, 'edit'])->name('transaksi.edit');
     Route::put('/transaksi/{id}', [PesananController::class, 'update'])->name('transaksi.update');
     Route::post('/transaksi/cancel/{id}', [PesananController::class, 'cancel'])->name('transaksi.cancel');
+    Route::put('/transaksi/{id}/komplain', [PesananController::class, 'updateKomplain'])->name('transaksi.komplain');
 
-    // Rute Piutang & Update Pembayaran Cicilan
-    Route::get('/piutang', [PiutangController::class, 'index'])->name('piutang.index');
-    Route::post('/piutang/bayar/{id}', [PiutangController::class, 'updatePembayaran'])->name('piutang.bayar');
+    // 3. Pemasokan Daging
+    Route::get('/pemasokan-daging', [PemasokanDagingController::class, 'index'])->name('pemasokan.index');
+    Route::post('/pemasokan-daging', [PemasokanDagingController::class, 'store'])->name('pemasokan.store');
+    Route::put('/pemasokan-daging/{id}', [PemasokanDagingController::class, 'update'])->name('pemasokan.update');
+    Route::delete('/pemasokan-daging/{id}', [PemasokanDagingController::class, 'destroy'])->name('pemasokan.destroy');
 
-    // Rute Pengeluaran Harian
-    Route::get('/pengeluaran', [PengeluaranController::class, 'index'])->name('pengeluaran.index');
-    Route::post('/pengeluaran/store', [PengeluaranController::class, 'store'])->name('pengeluaran.store');
-    Route::put('/pengeluaran/{id}', [PengeluaranController::class, 'update'])->name('pengeluaran.update');
-    Route::delete('/pengeluaran/{id}', [PengeluaranController::class, 'destroy'])->name('pengeluaran.destroy');
-    Route::post('/keuangan/pengeluaran', [KeuanganController::class, 'storePengeluaran'])->name('keuangan.pengeluaran.store');
+    // 4. Produk & Jagal
+    Route::get('/produk', [ProdukController::class, 'index'])->name('produk.index');
+    Route::post('/produk', [ProdukController::class, 'store'])->name('produk.store');
+    Route::put('/produk/{id}', [ProdukController::class, 'update'])->name('produk.update');
+    Route::delete('/produk/{id}', [ProdukController::class, 'destroy'])->name('produk.destroy');
 
-    // Rute Kelola Data (Master Data: Produk & Pelanggan)
-    Route::get('/master', [MasterDataController::class, 'index'])->name('master.index');
+    Route::post('/jagal', [ProdukController::class, 'storeJagal'])->name('jagal.store');
+    Route::put('/jagal/{id}', [ProdukController::class, 'updateJagal'])->name('jagal.update');
+    Route::delete('/jagal/{id}', [ProdukController::class, 'destroyJagal'])->name('jagal.destroy');
 
-    // Rute CRUD Produk
-    Route::post('/master/produk', [MasterDataController::class, 'storeProduk'])->name('master.produk.store');
-    Route::put('/master/produk/{id}', [MasterDataController::class, 'updateProduk'])->name('master.produk.update');
-    Route::delete('/master/produk/{id}', [MasterDataController::class, 'deleteProduk'])->name('master.produk.delete');
+    // 5. Pelanggan (+ History Pesanan, Pembayaran & Komplain)
+    Route::get('/pelanggan', [PelangganController::class, 'index'])->name('pelanggan.index');
+    Route::get('/pelanggan/{id}', [PelangganController::class, 'show'])->name('pelanggan.show');
+    Route::post('/pelanggan', [PelangganController::class, 'store'])->name('pelanggan.store');
+    Route::put('/pelanggan/{id}', [PelangganController::class, 'update'])->name('pelanggan.update');
+    Route::delete('/pelanggan/{id}', [PelangganController::class, 'destroy'])->name('pelanggan.destroy');
 
-    // Rute CRUD Pelanggan
-    Route::post('/master/pelanggan', [MasterDataController::class, 'storePelanggan'])->name('master.pelanggan.store');
-    Route::put('/master/pelanggan/{id}', [MasterDataController::class, 'updatePelanggan'])->name('master.pelanggan.update');
-    Route::delete('/master/pelanggan/{id}', [MasterDataController::class, 'deletePelanggan'])->name('master.pelanggan.delete');
-
-    // Rute Keuangan
+    // 6. Keuangan, Tagihan (Piutang) & Pengeluaran
     Route::get('/keuangan', [KeuanganController::class, 'index'])->name('keuangan.index');
     Route::post('/pengaturan/notifikasi', [KeuanganController::class, 'updateNotifikasi'])->name('pengaturan.notifikasi');
     Route::post('/pengaturan/notifikasi/test', [KeuanganController::class, 'testNotifikasi'])->name('pengaturan.notifikasi.test');
     Route::post('/pengaturan/notifikasi/kirim', [KeuanganController::class, 'kirimPengingatManual'])->name('pengaturan.notifikasi.kirim');
 
-    // Rute Profil
+    Route::get('/piutang', [PiutangController::class, 'index'])->name('piutang.index');
+    Route::post('/piutang/bayar/{id}', [PiutangController::class, 'updatePembayaran'])->name('piutang.bayar');
+
+    Route::get('/pengeluaran', [PengeluaranController::class, 'index'])->name('pengeluaran.index');
+    Route::post('/pengeluaran/store', [PengeluaranController::class, 'store'])->name('pengeluaran.store');
+    Route::put('/pengeluaran/{id}', [PengeluaranController::class, 'update'])->name('pengeluaran.update');
+    Route::delete('/pengeluaran/{id}', [PengeluaranController::class, 'destroy'])->name('pengeluaran.destroy');
+
+    // 7. Profil
     Route::get('/profil', [ProfilController::class, 'index'])->name('profil.index');
     Route::put('/profil/update', [ProfilController::class, 'update'])->name('profil.update');
     Route::put('/profil/password', [ProfilController::class, 'updatePassword'])->name('profil.password.update');
