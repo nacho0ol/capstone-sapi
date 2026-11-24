@@ -1,12 +1,23 @@
 @extends('layouts.app')
 
 @section('content')
-<div x-data="{ isEditing: {{ $errors->hasAny(['nama', 'nama_user', 'username']) ? 'true' : 'false' }} }" class="space-y-4 max-w-2xl mx-auto">
+<div x-data="{ isEditing: {{ $errors->any() ? 'true' : 'false' }} }" class="space-y-4 max-w-2xl mx-auto">
     
     <!-- Header Halaman -->
-    <div>
-        <h1 class="text-xl font-bold text-gray-900">Pengaturan Profil</h1>
-        <p class="text-xs text-gray-500 mt-0.5">Kelola informasi akun dan data pengguna</p>
+    <div class="flex items-center gap-3">
+        <!-- Tombol Back (Muncul saat mode Edit Profil) -->
+        <button type="button"
+                x-show="isEditing"
+                x-cloak
+                @click="isEditing = false"
+                class="p-2 bg-white border border-border-muted rounded-xl text-gray-600 hover:text-[#842529] hover:border-[#842529] hover:bg-gray-50 transition-all shadow-sm"
+                title="Kembali ke Profil">
+            <x-lucide-arrow-left class="w-5 h-5" />
+        </button>
+        <div>
+            <h1 class="text-xl font-bold text-gray-900" x-text="isEditing ? 'Edit Profil' : 'Pengaturan Profil'"></h1>
+            <p class="text-xs text-gray-500 mt-0.5" x-text="isEditing ? 'Perbarui informasi akun dan kata sandi' : 'Kelola informasi akun dan data pengguna'"></p>
+        </div>
     </div>
 
     @if(session('success'))
@@ -16,6 +27,7 @@
         </div>
     @endif
 
+    <!-- CARD HEADER USER -->
     <div class="bg-white border border-border-muted rounded-2xl p-5 shadow-sm flex items-center justify-between">
         <div class="flex items-center gap-4">
             <div class="w-14 h-14 bg-rose-100 text-[#842529] rounded-full flex items-center justify-center font-bold text-xl border border-rose-200">
@@ -26,7 +38,7 @@
                     {{ auth()->user()->nama_user ?? auth()->user()->nama ?? auth()->user()->name ?? 'Admin Olivia' }}
                 </h2>
                 
-                <!-- BADGE USERNAME (Menggantikan Badge Role) -->
+                <!-- BADGE USERNAME -->
                 <div class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-200">
                     <x-lucide-at-sign class="w-3 h-3 text-sky-600" />
                     <span>{{ auth()->user()->username ?? 'admin' }}</span>
@@ -68,10 +80,12 @@
 
     <!-- 2. TAMPILAN EDIT PROFIL (MUNCUL KETIKA DIKLIK EDIT) -->
     <div x-show="isEditing" x-cloak class="bg-white border border-border-muted rounded-2xl p-5 shadow-sm space-y-4">
-        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-border-muted pb-3 flex items-center gap-1.5">
-            <x-lucide-user-cog class="w-4 h-4 text-[#842529]" />
-            <span>Update Data Profil</span>
-        </h3>
+        <div class="flex items-center justify-between border-b border-border-muted pb-3">
+            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                <x-lucide-user-cog class="w-4 h-4 text-[#842529]" />
+                <span>Update Data Profil</span>
+            </h3>
+        </div>
 
         @if ($errors->hasAny(['nama', 'nama_user', 'username']))
             <div class="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-xl text-xs space-y-1">
@@ -101,22 +115,16 @@
                        class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white transition-all" required>
             </div>
 
-            <div class="pt-2 flex gap-2">
-                <button type="button" 
-                        @click="isEditing = false" 
-                        class="flex-1 border border-border-muted text-gray-700 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-50 transition-colors">
-                    Batal
-                </button>
-                <button type="submit" 
-                        class="flex-1 bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold text-xs shadow-md transition-all active:scale-95">
+            <div class="pt-2 flex justify-end">
+                <button type="submit" class="bg-[#842529] hover:bg-red-900 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all active:scale-95">
                     Simpan Perubahan
                 </button>
             </div>
         </form>
     </div>
 
-    <!--  UPDATE PASSWORD  -->
-    <div class="bg-white border border-border-muted rounded-2xl p-5 shadow-sm space-y-4">
+    <!-- 3. UPDATE PASSWORD (HANYA MUNCUL SAAT EDIT PROFIL) -->
+    <div x-show="isEditing" x-cloak class="bg-white border border-border-muted rounded-2xl p-5 shadow-sm space-y-4">
         <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-border-muted pb-3 flex items-center gap-1.5">
             <x-lucide-lock class="w-4 h-4 text-[#842529]" />
             <span>Update Password</span>
@@ -175,8 +183,8 @@
         </form>
     </div>
 
-    <!-- BUTTON LOGOUT -->
-    <form action="{{ route('logout') }}" method="POST" class="pt-2">
+    <!-- BUTTON LOGOUT (HANYA MUNCUL SAAT VIEW MODE) -->
+    <form x-show="!isEditing" action="{{ route('logout') }}" method="POST" class="pt-2">
         @csrf
         <button type="submit" 
                 class="w-full bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-bold py-3 rounded-2xl text-xs transition-colors flex items-center justify-center gap-2 active:scale-98">
