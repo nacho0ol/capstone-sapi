@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Olivia Meat N Fresh - Sistem Informasi Akuntansi & Piutang</title>
+    <title>Olivia Meat N Fresh - Sistem Informasi Akuntansi & Tagihan</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <style>[x-cloak] { display: none !important; }</style>
@@ -26,7 +26,7 @@
 
             <div>
                 <h1 class="text-xl font-extrabold text-[#842529] tracking-tight">Olivia Meat N Fresh</h1>
-                <p class="text-xs text-gray-500 font-medium mt-1">Sistem Informasi Akuntansi & Monitoring Piutang</p>
+                <p class="text-xs text-gray-500 font-medium mt-1">Sistem Informasi Akuntansi & Monitoring Tagihan</p>
             </div>
         </div>
 
@@ -37,7 +37,7 @@
                 <span>Portal Layanan Toko</span>
             </div>
             <p class="text-xs text-gray-600 leading-relaxed">
-                Platform internal untuk pencatatan orderan harian, manajemen pengeluaran operasional, serta monitoring piutang tempo pelanggan secara terintegrasi.
+                Platform internal untuk pencatatan orderan harian, manajemen pengeluaran operasional, serta monitoring tagihan tempo pelanggan secara terintegrasi.
             </p>
         </div>
 

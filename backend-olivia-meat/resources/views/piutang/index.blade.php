@@ -53,7 +53,7 @@
                 <x-lucide-arrow-left class="w-5 h-5" />
             </a>
             <div>
-                <h1 class="text-xl font-bold text-gray-900">Monitoring Piutang Pelanggan</h1>
+                <h1 class="text-xl font-bold text-gray-900">Monitoring Tagihan Pelanggan</h1>
                 <p class="text-xs text-gray-500 mt-0.5">Pantau status tagihan tempo dan pencatatan cicilan</p>
             </div>
         </div>
@@ -83,7 +83,7 @@
             
             <h3 class="font-bold text-gray-900 text-sm mb-4 border-b border-border-muted pb-3 flex items-center gap-2">
                 <x-lucide-coins class="w-4 h-4 text-[#842529]" />
-                <span>Bayar Cicilan Piutang</span>
+                <span>Bayar Cicilan Tagihan</span>
             </h3>
             
             <form :action="'{{ url('/piutang/bayar') }}/' + selectedId" method="POST" class="space-y-3">
@@ -124,7 +124,7 @@
         </div>
     </div>
 
-    <!-- LIST DATA PIUTANG -->
+    <!-- LIST DATA TAGIHAN -->
     <div class="space-y-3">
         @forelse($piutang as $p)
             <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm hover:border-gray-300 transition-all flex flex-col">

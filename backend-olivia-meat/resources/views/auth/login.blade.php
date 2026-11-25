@@ -19,7 +19,7 @@
                 <img src="{{ asset('images/logo.jpeg') }}" alt="Logo Olivia Meat N Fresh" class="max-h-full max-w-full object-contain">
             </div>
             <h1 class="text-xl font-bold tracking-tight">Olivia Meat N Fresh</h1>
-            <p class="text-xs text-rose-100 mt-1">Sistem Informasi Akuntansi & Monitoring Piutang</p>
+            <p class="text-xs text-rose-100 mt-1">Sistem Informasi Akuntansi & Monitoring Tagihan</p>
         </div>
 
         <div class="p-6">

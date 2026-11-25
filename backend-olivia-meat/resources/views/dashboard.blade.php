@@ -6,7 +6,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-xl font-bold text-gray-900">Ringkasan Keuangan</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Monitoring orderan & piutang Olivia Meat N Fresh</p>
+            <p class="text-xs text-gray-500 mt-0.5">Monitoring orderan & tagihan Olivia Meat N Fresh</p>
         </div>
         <!-- Cuma muncul di Laptop/Desktop (hidden sm:inline-flex) -->
         <a href="{{ route('transaksi.index') }}" 
@@ -34,13 +34,13 @@
         </div>
     </div>
 
-    <!-- Hero Card 2: Piutang Belum Lunas -->
+    <!-- Hero Card 2: Tagihan Belum Lunas -->
     <div class="bg-white border border-border-muted rounded-2xl p-5 shadow-sm relative overflow-hidden">
         <div class="flex items-center justify-between">
             <div>
                 <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
                     <x-lucide-clock class="w-4 h-4 text-sky-600" />
-                    Total Piutang Belum Lunas
+                    Total Tagihan Belum Lunas
                 </span>
                 <h2 class="text-2xl sm:text-3xl font-extrabold text-sky-700 mt-1">
                     Rp {{ number_format($totalPiutang, 0, ',', '.') }}

@@ -18,7 +18,7 @@ Route::get('/user', function (Request $request) {
 Route::apiResource('pesanan', PesananController::class)->except(['update', 'destroy']);
 Route::put('pesanan/{id}/batal', [PesananController::class, 'cancel']);
 
-// Piutang
+// TAGIHAN
 Route::get('piutang', [PiutangController::class, 'index']);
 Route::get('piutang/{id}', [PiutangController::class, 'show']);
 Route::put('piutang/{id}/bayar', [PiutangController::class, 'bayar']);

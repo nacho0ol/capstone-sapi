@@ -165,11 +165,11 @@
                     </select>
                 </div>
 
-                <!-- Box Tempo & Piutang dengan Format Ribuan Titik -->
+                <!-- Box Tempo & Tagihan dengan Format Ribuan Titik -->
                 <div x-show="metodeBayar === 'Tempo'" x-cloak class="bg-sky-50 border border-sky-200 p-3 rounded-xl space-y-2" x-transition>
                     <h4 class="text-[11px] font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1">
                         <x-lucide-receipt class="w-3.5 h-3.5 text-sky-700" />
-                        <span>Data Piutang & DP</span>
+                        <span>Data Tagihan & DP</span>
                     </h4>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
