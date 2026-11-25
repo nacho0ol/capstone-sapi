@@ -6,13 +6,13 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
             <h1 class="text-xl font-bold text-gray-900">Ringkasan Keuangan</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Monitoring pesanan & piutang Olivia Meat N Fresh</p>
+            <p class="text-xs text-gray-500 mt-0.5">Monitoring orderan & piutang Olivia Meat N Fresh</p>
         </div>
         <!-- Cuma muncul di Laptop/Desktop (hidden sm:inline-flex) -->
         <a href="{{ route('transaksi.index') }}" 
            class="hidden sm:inline-flex items-center justify-center gap-2 bg-[#842529] hover:bg-red-900 text-white py-2.5 px-4 rounded-xl text-xs font-semibold shadow-sm transition-all duration-150 active:scale-95">
             <x-lucide-plus-circle class="w-4 h-4 text-white" />
-            <span>Catat Pesanan Baru</span>
+            <span>Catat Orderan Baru</span>
         </a>
     </div>
 
@@ -86,7 +86,7 @@
         <a href="{{ route('transaksi.index') }}" 
            class="w-full flex items-center justify-center gap-2 bg-[#842529] hover:bg-red-900 text-white py-3 rounded-xl font-bold text-xs shadow-md transition-all active:scale-95">
             <x-lucide-plus class="w-4 h-4 text-white" />
-            <span>Catat Pesanan Baru</span>
+            <span>Catat Orderan Baru</span>
         </a>
     </div>
 </div>

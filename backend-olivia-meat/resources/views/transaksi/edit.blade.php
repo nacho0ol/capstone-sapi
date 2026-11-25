@@ -22,12 +22,12 @@
     <div class="flex justify-between items-center">
         <div>
             <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <span>Edit Pesanan</span>
+                <span>Edit Orderan</span>
                 <span class="text-xs bg-[#FAE2E2] text-[#842529] px-2.5 py-0.5 rounded-md font-extrabold border border-[#842529]/10">
                     #{{ $pesanan->id_pesanan }}
                 </span>
             </h1>
-            <p class="text-xs text-gray-500 mt-0.5">Ubah detail pesanan, jadwal antar, dan daftar item pesanan</p>
+            <p class="text-xs text-gray-500 mt-0.5">Ubah detail orderan, jadwal antar, dan daftar item orderan</p>
         </div>
         <a href="{{ route('transaksi.index') }}" 
            class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-xl transition-all">
@@ -36,13 +36,13 @@
         </a>
     </div>
 
-    <!-- Form Edit Pesanan -->
+    <!-- Form Edit Orderan -->
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-border-muted">
         @if ($errors->any())
             <div class="bg-red-50 border border-red-200 text-red-600 px-3.5 py-2.5 rounded-xl text-xs mb-4 space-y-1">
                 <div class="font-bold flex items-center gap-1.5">
                     <x-lucide-alert-circle class="w-4 h-4 text-red-600 flex-shrink-0" />
-                    <span>Gagal Memperbarui Pesanan:</span>
+                    <span>Gagal Memperbarui Orderan:</span>
                 </div>
                 <ul class="list-disc pl-5 space-y-0.5">
                     @foreach ($errors->all() as $error)
@@ -168,7 +168,7 @@
                 <div class="flex justify-between items-center">
                     <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
                         <x-lucide-package class="w-4 h-4 text-[#842529]" />
-                        <span>Item Produk Pesanan</span>
+                        <span>Item Produk Orderan</span>
                     </label>
                 </div>
                 

@@ -37,7 +37,7 @@
                 <span>Portal Layanan Toko</span>
             </div>
             <p class="text-xs text-gray-600 leading-relaxed">
-                Platform internal untuk pencatatan pesanan harian, manajemen pengeluaran operasional, serta monitoring piutang tempo pelanggan secara terintegrasi.
+                Platform internal untuk pencatatan orderan harian, manajemen pengeluaran operasional, serta monitoring piutang tempo pelanggan secara terintegrasi.
             </p>
         </div>
 

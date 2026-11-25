@@ -7,7 +7,7 @@
     <div class="flex justify-between items-center">
         <div>
             <h1 class="text-xl font-bold text-gray-900">Keuangan & Laporan</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Analisis laba rugi, daftar pesanan, tagihan, dan pengeluaran operasional</p>
+            <p class="text-xs text-gray-500 mt-0.5">Analisis laba rugi, daftar orderan, tagihan, dan pengeluaran operasional</p>
         </div>
         <button @click="showSetting = true" 
                 class="inline-flex items-center gap-2 bg-white hover:bg-[#FAE2E2] text-[#842529] border border-border-muted px-3 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 focus:outline-none" 
@@ -26,7 +26,7 @@
         <a href="{{ route('keuangan.index', ['tab' => 'riwayat']) }}" 
            class="py-3 px-4 sm:px-6 text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 {{ $tab == 'riwayat' ? 'border-b-2 border-[#842529] text-[#842529]' : 'text-gray-500 hover:text-gray-700' }}">
             <x-lucide-history class="w-4 h-4" />
-            <span>Daftar Pesanan</span>
+            <span>Daftar Orderan</span>
         </a>
         <a href="{{ route('keuangan.index', ['tab' => 'piutang']) }}" 
            class="py-3 px-4 sm:px-6 text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 {{ $tab == 'piutang' ? 'border-b-2 border-[#842529] text-[#842529]' : 'text-gray-500 hover:text-gray-700' }}">
@@ -137,11 +137,11 @@
             </div>
         </div>   
         
-    <!-- ================= ISI TAB 2: DAFTAR PESANAN ================= -->
+    <!-- ================= ISI TAB 2: DAFTAR ORDERAN ================= -->
     @elseif($tab == 'riwayat')
         <div class="space-y-3">
             
-            <!-- FORM PENCARIAN & FILTER PESANAN -->
+            <!-- FORM PENCARIAN & FILTER ORDERAN -->
             <form action="{{ route('keuangan.index') }}" method="GET" class="bg-gray-50 border border-border-muted p-3 rounded-2xl mb-4 space-y-3">
                 <input type="hidden" name="tab" value="riwayat"> 
                 
@@ -256,14 +256,14 @@
                         </div>
                     </div>
 
-                    <!-- MODAL DETAIL PESANAN -->
+                    <!-- MODAL DETAIL ORDERAN -->
                     <div x-show="showDetail" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
                         <div @click.away="showDetail = false" class="bg-white rounded-2xl w-full max-w-md shadow-xl flex flex-col max-h-[90vh] border border-border-muted overflow-hidden">
                             <div class="p-4 border-b border-border-muted flex justify-between items-center bg-gray-50">
                                 <div class="flex items-center gap-2">
                                     <x-lucide-file-text class="w-4 h-4 text-[#842529]" />
                                     <div>
-                                        <h3 class="font-bold text-gray-800 text-sm">Detail Pesanan</h3>
+                                        <h3 class="font-bold text-gray-800 text-sm">Detail Orderan</h3>
                                         <p class="text-[10px] text-gray-500 font-mono">{{ $p->id_pesanan }}</p>
                                     </div>
                                 </div>
@@ -290,7 +290,7 @@
                                         <span class="font-bold text-gray-800">{{ $p->metode_bayar }}</span>
                                     </div>
                                     <div>
-                                        <span class="text-gray-500 block text-[11px]">Status Bayar / Pesanan</span>
+                                        <span class="text-gray-500 block text-[11px]">Status Bayar / Orderan</span>
                                         <span class="font-bold {{ $p->status_bayar == 'Lunas' ? 'text-emerald-700' : 'text-amber-700' }}">{{ $p->status_bayar }}</span>
                                         <span class="text-gray-400">•</span>
                                         <span class="font-bold {{ $isCancelled ? 'text-rose-700' : 'text-sky-700' }}">{{ $statusLabel }}</span>
@@ -314,15 +314,15 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Form Komplain / Catatan Pesanan -->
+                                <!-- Form Komplain / Catatan Orderan -->
                                 <form action="{{ route('transaksi.komplain', $p->id_pesanan) }}" method="POST" class="bg-amber-50/70 p-3 border border-amber-200 rounded-xl space-y-2">
                                     @csrf
                                     @method('PUT')
                                     <label class="font-bold text-xs text-amber-900 uppercase flex items-center gap-1">
                                         <x-lucide-message-square-warning class="w-3.5 h-3.5 text-amber-700" />
-                                        <span>Komplain / Catatan Pesanan:</span>
+                                        <span>Komplain / Catatan Orderan:</span>
                                     </label>
-                                    <textarea name="catatan" rows="2" placeholder="Catat komplain pelanggan atau catatan khusus pesanan ini..."
+                                    <textarea name="catatan" rows="2" placeholder="Catat komplain pelanggan atau catatan khusus orderan ini..."
                                               class="w-full bg-white border border-amber-200 rounded-lg p-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#842529]">{{ $p->catatan }}</textarea>
                                     <div class="flex justify-end">
                                         <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors">
@@ -337,32 +337,32 @@
                                 <span class="font-extrabold text-[#842529] text-base">Rp {{ number_format($totalTagihan, 0, ',', '.') }}</span>
                             </div>
 
-                            <!-- Tombol Edit & Batalkan Pesanan -->
+                            <!-- Tombol Edit & Batalkan Orderan -->
                             <div class="px-4 py-3 border-t border-border-muted bg-white flex items-center gap-2">
                                 @if(!$isCancelled && !$isCompleted)
                                     <a href="{{ route('transaksi.edit', $p->id_pesanan) }}" 
                                        class="flex-1 inline-flex items-center justify-center gap-1.5 text-xs bg-amber-50 text-amber-700 hover:bg-amber-100 py-2.5 px-3 rounded-xl font-bold border border-amber-200 transition-colors">
                                         <x-lucide-square-pen class="w-4 h-4" />
-                                        <span>Edit Pesanan</span>
+                                        <span>Edit Orderan</span>
                                     </a>
 
                                     <button type="button" 
                                             @click="$dispatch('confirm-action', { 
                                                 action: '{{ route('transaksi.cancel', $p->id_pesanan) }}', 
-                                                title: 'Batalkan Pesanan', 
-                                                message: 'Apakah Anda yakin ingin membatalkan pesanan #{{ $p->id_pesanan }}?', 
+                                                title: 'Batalkan Orderan', 
+                                                message: 'Apakah Anda yakin ingin membatalkan orderan #{{ $p->id_pesanan }}?', 
                                                 method: 'POST',
                                                 confirmText: 'Ya, Batalkan',
                                                 confirmClass: 'bg-rose-600 hover:bg-rose-700'
                                             })"
                                             class="flex-1 inline-flex items-center justify-center gap-1.5 text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 py-2.5 px-3 rounded-xl font-bold border border-rose-200 transition-colors">
                                         <x-lucide-x-circle class="w-4 h-4" />
-                                        <span>Batalkan Pesanan</span>
+                                        <span>Batalkan Orderan</span>
                                     </button>
                                 @elseif($isCancelled)
                                     <div class="w-full inline-flex items-center justify-center gap-1.5 text-xs bg-gray-100 text-gray-500 py-2.5 px-3 rounded-xl font-bold border border-gray-200 cursor-not-allowed">
                                         <x-lucide-ban class="w-4 h-4" />
-                                        <span>Pesanan Sudah Dibatalkan</span>
+                                        <span>Orderan Sudah Dibatalkan</span>
                                     </div>
                                 @endif
                             </div>
