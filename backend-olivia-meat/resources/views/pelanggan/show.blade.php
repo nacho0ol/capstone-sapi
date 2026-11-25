@@ -20,7 +20,7 @@
         <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm">
             <p class="text-xs text-gray-500 font-medium">Total Transaksi Belanja</p>
             <p class="text-lg font-extrabold text-emerald-700 mt-1">Rp {{ number_format($totalBelanja, 0, ',', '.') }}</p>
-            <p class="text-[10px] text-gray-400 mt-0.5">{{ $riwayatPesanan->count() }} riwayat pemesanan</p>
+            <p class="text-[10px] text-gray-400 mt-0.5">{{ $riwayatPesanan->count() }} riwayat orderan</p>
         </div>
 
         <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm">
@@ -33,14 +33,14 @@
 
         <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm">
             <p class="text-xs text-gray-500 font-medium">Catatan / Komplain Tercatat</p>
-            <p class="text-lg font-extrabold text-amber-700 mt-1">{{ $jumlahKomplain }} pemesanan</p>
-            <p class="text-[10px] text-gray-400 mt-0.5">Tersimpan di catatan pemesanan</p>
+            <p class="text-lg font-extrabold text-amber-700 mt-1">{{ $jumlahKomplain }} Orderan</p>
+            <p class="text-[10px] text-gray-400 mt-0.5">Tersimpan di catatan orderan</p>
         </div>
     </div>
 
-    <!-- Daftar Riwayat pemesanan, Pembayaran, & Komplain -->
+    <!-- Daftar Riwayat Orderan, Pembayaran, & Komplain -->
     <div class="space-y-3">
-        <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Riwayat pemesanan, Pembayaran & Komplain</h2>
+        <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Riwayat Orderan, Pembayaran & Komplain</h2>
 
         @forelse($riwayatPesanan as $order)
             @php
@@ -50,7 +50,7 @@
             @endphp
 
             <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm space-y-3 text-xs">
-                <!-- Header pemesanan -->
+                <!-- Header Orderan -->
                 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border-muted pb-3">
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="font-bold text-[#842529] font-mono text-sm">{{ $order->id_pesanan }}</span>
@@ -97,14 +97,14 @@
                     @endif
                 </div>
 
-                <!-- Komplain / Catatan pemesanan -->
+                <!-- Komplain / Catatan Orderan -->
                 <form action="{{ route('transaksi.komplain', $order->id_pesanan) }}" method="POST" class="bg-amber-50/70 border border-amber-200 rounded-xl p-3 space-y-2">
                     @csrf
                     @method('PUT')
                     <div class="flex items-center justify-between">
                         <label class="font-bold text-amber-900 flex items-center gap-1.5 text-[11px] uppercase">
                             <x-lucide-message-square-warning class="w-3.5 h-3.5 text-amber-700" />
-                            <span>Komplain / Catatan pemesanan</span>
+                            <span>Komplain / Catatan Orderan</span>
                         </label>
                         @if(!empty($order->catatan))
                             <span class="text-[10px] font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded">Tercatat</span>
@@ -113,7 +113,7 @@
 
                     <div class="flex flex-col sm:flex-row gap-2">
                         <input type="text" name="catatan" value="{{ $order->catatan }}" 
-                               placeholder="Tulis komplain pelanggan atau catatan pemesanan ini..."
+                               placeholder="Tulis komplain pelanggan atau catatan orderan ini..."
                                class="flex-1 bg-white border border-amber-200 rounded-xl px-3 py-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#842529]">
                         <button type="submit" class="bg-[#842529] hover:bg-red-900 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition-all inline-flex items-center justify-center gap-1.5 shrink-0">
                             <x-lucide-save class="w-3.5 h-3.5" />
@@ -124,7 +124,7 @@
             </div>
         @empty
             <div class="text-center bg-white rounded-2xl border border-border-muted py-12 shadow-sm">
-                <p class="text-gray-400 text-xs">Pelanggan ini belum memiliki riwayat pemesanan.</p>
+                <p class="text-gray-400 text-xs">Pelanggan ini belum memiliki riwayat orderan.</p>
             </div>
         @endforelse
     </div>

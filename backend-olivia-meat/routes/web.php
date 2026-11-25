@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
     // 1. Beranda
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // 2. pemesanan (Transaksi pemesanan)
+    // 2. Orderan (Transaksi Orderan)
     Route::get('/transaksi', [PesananController::class, 'index'])->name('transaksi.index');
     Route::post('/transaksi/store', [PesananController::class, 'store'])->name('transaksi.store');
     Route::get('/transaksi/{id}/edit', [PesananController::class, 'edit'])->name('transaksi.edit');
