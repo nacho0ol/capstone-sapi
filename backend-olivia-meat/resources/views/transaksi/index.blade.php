@@ -38,8 +38,8 @@
     <!-- Header Halaman -->
     <div class="flex justify-between items-center">
         <div>
-            <h1 class="text-xl font-bold text-gray-900">Daftar Orderan</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Kelola data dan status pengiriman Orderan</p>
+            <h1 class="text-xl font-bold text-gray-900">Daftar pemesanan</h1>
+            <p class="text-xs text-gray-500 mt-0.5">Kelola data dan status pengiriman pemesanan</p>
         </div>
         <button @click="showForm = true" 
                 class="inline-flex items-center gap-1.5 bg-[#842529] hover:bg-red-900 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95">
@@ -48,7 +48,7 @@
         </button>
     </div>
 
-    <!-- FORM FILTER ORDERAN -->
+    <!-- FORM FILTER pemesanan -->
     <form action="{{ route('transaksi.index') }}" method="GET" class="bg-white border border-border-muted p-3 rounded-2xl shadow-sm space-y-2">
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
             <select name="pelanggan_id" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
@@ -94,7 +94,7 @@
         </div>
     </form>
 
-    <!-- MODAL BUAT ORDERAN BARU -->
+    <!-- MODAL BUAT pemesanan BARU -->
     <div x-show="showForm" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
         <div @click.away="showForm = false" class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-5 shadow-xl relative border border-border-muted">
             <button @click="showForm = false" class="absolute top-4 right-4 text-gray-400 hover:text-[#842529] p-1 rounded-lg transition-colors">
@@ -103,14 +103,14 @@
             
             <h3 class="font-bold text-gray-900 text-sm mb-4 border-b border-border-muted pb-3 flex items-center gap-2">
                 <x-lucide-shopping-bag class="w-4 h-4 text-[#842529]" />
-                <span>Buat Orderan Baru</span>
+                <span>Buat pemesanan Baru</span>
             </h3>
             
             @if ($errors->any())
                 <div class="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-xl text-xs mb-3 space-y-1">
                     <div class="font-bold flex items-center gap-1.5">
                         <x-lucide-alert-circle class="w-4 h-4 text-red-600 flex-shrink-0" />
-                        <span>Gagal Menyimpan Orderan:</span>
+                        <span>Gagal Menyimpan pemesanan:</span>
                     </div>
                     <ul class="list-disc pl-5 space-y-0.5">
                         @foreach ($errors->all() as $error)
@@ -225,7 +225,7 @@
 
                 <div class="pt-3 flex gap-2">
                     <button type="button" @click="showForm = false" class="flex-1 border border-border-muted text-gray-700 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-50">Batal</button>
-                    <button type="submit" class="flex-1 bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold text-xs shadow-md">Simpan Orderan</button>
+                    <button type="submit" class="flex-1 bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold text-xs shadow-md">Simpan pemesanan</button>
                 </div>
             </form>
         </div>
@@ -290,7 +290,7 @@
         </div>
     </div>
 
-    <!-- LIST DATA ORDERAN -->
+    <!-- LIST DATA pemesanan -->
     <div class="space-y-3">
         @forelse($pesanan as $p)
             @php
@@ -373,8 +373,8 @@
                             <button type="button" 
                                     @click="$dispatch('confirm-action', { 
                                         action: '{{ route('transaksi.cancel', $p->id_pesanan) }}', 
-                                        title: 'Batalkan Orderan', 
-                                        message: 'Apakah Anda yakin ingin membatalkan orderan #{{ $p->id_pesanan }}?', 
+                                        title: 'Batalkan pemesanan', 
+                                        message: 'Apakah Anda yakin ingin membatalkan pemesanan #{{ $p->id_pesanan }}?', 
                                         method: 'POST',
                                         confirmText: 'Ya, Batalkan',
                                         confirmClass: 'bg-rose-600 hover:bg-rose-700'
@@ -385,7 +385,7 @@
                             </button>
                         </div>
                     @elseif($isCancelled)
-                        <span class="inline-flex items-center justify-center gap-1 text-[10px] bg-gray-100 text-gray-400 px-2.5 py-1.5 rounded-xl font-bold w-full text-center border border-gray-200 cursor-not-allowed" title="Orderan sudah dibatalkan">
+                        <span class="inline-flex items-center justify-center gap-1 text-[10px] bg-gray-100 text-gray-400 px-2.5 py-1.5 rounded-xl font-bold w-full text-center border border-gray-200 cursor-not-allowed" title="pemesanan sudah dibatalkan">
                             <x-lucide-ban class="w-3.5 h-3.5" />
                             <span>Dibatalkan</span>
                         </span>
@@ -395,8 +395,8 @@
         @empty
             <div class="text-center bg-white rounded-2xl border border-border-muted py-12 shadow-sm">
                 <x-lucide-shopping-bag class="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                <p class="text-gray-400 text-xs">Belum ada data orderan.</p>
-                <button @click="showForm = true" class="mt-2 text-[#842529] font-bold text-xs hover:underline">Buat Orderan Pertama</button>
+                <p class="text-gray-400 text-xs">Belum ada data pemesanan.</p>
+                <button @click="showForm = true" class="mt-2 text-[#842529] font-bold text-xs hover:underline">Buat pemesanan Pertama</button>
             </div>
         @endforelse
     </div>

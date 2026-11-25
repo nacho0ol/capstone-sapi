@@ -24,14 +24,14 @@ class KeuanganController extends Controller
         $filterWaktuLaba = $request->get('filter_laba_waktu', '');
         $filterTanggalLaba = $request->get('filter_laba_tanggal', '');
 
-        // A. Uang Masuk dari Orderan (Pesanan Lunas & Tidak Dibatalkan)
+        // A. Uang Masuk dari Pemesanan (Pesanan Lunas & Tidak Dibatalkan)
         $pemasukanQuery = Pesanan::where('pesanans.is_deleted', 0)
             ->where('pesanans.status_bayar', 'Lunas')
             ->whereNotIn('pesanans.status_pemesanan', ['Ditolak', 'Dibatalkan', 'ditolak', 'dibatalkan'])
             ->join('pesanan_details', 'pesanans.id_pesanan', '=', 'pesanan_details.id_pesanan')
             ->where('pesanan_details.is_deleted', 0);
 
-        // B. Yang Harus Dibayarkan ke Jagal (Otomatis dari qty x harga_awal orderan aktif)
+        // B. Yang Harus Dibayarkan ke Jagal (Otomatis dari qty x harga_awal Pemesanan aktif)
         $jagalQuery = Pesanan::where('pesanans.is_deleted', 0)
             ->whereNotIn('pesanans.status_pemesanan', ['Ditolak', 'Dibatalkan', 'ditolak', 'dibatalkan'])
             ->join('pesanan_details', 'pesanans.id_pesanan', '=', 'pesanan_details.id_pesanan')

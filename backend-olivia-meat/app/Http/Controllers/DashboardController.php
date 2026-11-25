@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Pesanan;
 use App\Models\PengeluaranHarian;
 use App\Models\Piutang;
+use App\Models\PemasokanDaging;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -30,7 +32,7 @@ class DashboardController extends Controller
         $totalPemasukan = $pemasukanLangsung + $pemasukanPiutang;
 
         // Pengeluaran Harian
-        $totalPengeluaran = PengeluaranHarian::sum('nominal');
+        $totalPengeluaran = PengeluaranHarian::where('is_deleted', 0)->sum('nominal');
 
         $labaRugi = $totalPemasukan - $totalPengeluaran;
 
@@ -38,6 +40,27 @@ class DashboardController extends Controller
                         ->where('is_deleted', 0)
                         ->sum(DB::raw('total_tagihan - jumlah_terbayar'));
 
-        return view('dashboard', compact('labaRugi', 'totalPemasukan', 'totalPengeluaran', 'totalPiutang'));
+        // Daftar Pemesanan Hari Ini
+        $orderanHariIni = Pesanan::with(['pelanggan', 'detail.produk'])
+                            ->where('is_deleted', 0)
+                            ->whereDate('tgl_order', Carbon::today())
+                            ->orderBy('id_pesanan', 'desc')
+                            ->get();
+
+        // Daftar Pemasokan Daging Hari Ini
+        $pemasokanHariIni = PemasokanDaging::with(['produk', 'jagal'])
+                            ->where('is_deleted', 0)
+                            ->whereDate('tgl_pemasokan', Carbon::today())
+                            ->orderBy('id_pemasokan', 'desc')
+                            ->get();
+
+        return view('dashboard', compact(
+            'labaRugi',
+            'totalPemasukan',
+            'totalPengeluaran',
+            'totalPiutang',
+            'orderanHariIni',
+            'pemasokanHariIni'
+        ));
     }
 }

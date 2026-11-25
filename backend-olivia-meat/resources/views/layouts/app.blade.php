@@ -67,6 +67,11 @@
                 </div>
 
                 <!-- Menu Navigasi Sidebar -->
+                @php
+                    $isPengeluaranActive = (request()->routeIs('keuangan.*') && request('tab') === 'pengeluaran') || request()->routeIs('pengeluaran.*');
+                    $isKeuanganActive = (request()->routeIs('keuangan.*') && request('tab') !== 'pengeluaran') || request()->routeIs('piutang.*');
+                @endphp
+
                 <nav class="space-y-1.5 text-xs font-semibold">
                     <a href="{{ route('dashboard') }}" @click="mobileSidebar = false"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('dashboard') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
@@ -77,7 +82,7 @@
                     <a href="{{ route('transaksi.index') }}" @click="mobileSidebar = false"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('transaksi.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
                         <x-lucide-shopping-bag class="w-4 h-4" />
-                        <span>Orderan</span>
+                        <span>Pemesanan</span>
                     </a>
 
                     <a href="{{ route('pemasokan.index') }}" @click="mobileSidebar = false"
@@ -99,9 +104,15 @@
                     </a>
 
                     <a href="{{ route('keuangan.index') }}" @click="mobileSidebar = false"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('keuangan.*') || request()->routeIs('piutang.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ $isKeuanganActive ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
                         <x-lucide-receipt class="w-4 h-4" />
                         <span>Keuangan</span>
+                    </a>
+
+                    <a href="{{ route('keuangan.index', ['tab' => 'pengeluaran']) }}" @click="mobileSidebar = false"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ $isPengeluaranActive ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
+                        <x-lucide-wallet class="w-4 h-4" />
+                        <span>Pengeluaran</span>
                     </a>
                 </nav>
             </div>
@@ -198,7 +209,7 @@
             <a href="{{ route('transaksi.index') }}" 
                class="flex items-center gap-2.5 bg-[#FAE2E2]/60 text-[#842529] hover:bg-[#FAE2E2] text-xs font-semibold p-2.5 rounded-xl transition-all">
                 <x-lucide-shopping-bag class="w-4 h-4" />
-                <span>Catat Orderan Baru</span>
+                <span>Catat Pemesanan Baru</span>
             </a>
 
             <a href="{{ route('pemasokan.index') }}" 
@@ -217,6 +228,12 @@
                class="flex items-center gap-2.5 bg-sky-50 text-sky-800 hover:bg-sky-100 text-xs font-semibold p-2.5 rounded-xl transition-all border border-sky-100">
                 <x-lucide-beef class="w-4 h-4 text-sky-700" />
                 <span>Tambah Produk Baru</span>
+            </a>
+
+            <a href="{{ route('produk.index', ['tab' => 'jagal']) }}" 
+               class="flex items-center gap-2.5 bg-rose-50 text-rose-800 hover:bg-rose-100 text-xs font-semibold p-2.5 rounded-xl transition-all border border-rose-200">
+                <x-lucide-store class="w-4 h-4 text-rose-700" />
+                <span>Tambah Jagal Baru</span>
             </a>
 
             <a href="{{ route('pelanggan.index') }}" 

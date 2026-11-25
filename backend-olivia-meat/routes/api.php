@@ -14,7 +14,7 @@ Route::get('/user', function (Request $request) {
 // Pengeluaran Harian
 //Route::apiResource('pengeluaran', PengeluaranHarianController::class);
 
-// Orderan
+// pemesanan
 Route::apiResource('pesanan', PesananController::class)->except(['update', 'destroy']);
 Route::put('pesanan/{id}/batal', [PesananController::class, 'cancel']);
 

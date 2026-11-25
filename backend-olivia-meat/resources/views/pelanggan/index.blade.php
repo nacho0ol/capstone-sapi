@@ -6,7 +6,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
             <h1 class="text-xl font-bold text-gray-900">Data Pelanggan</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Kelola daftar pelanggan, riwayat orderan, pembayaran tagihan, dan komplain</p>
+            <p class="text-xs text-gray-500 mt-0.5">Kelola daftar pelanggan, riwayat pemesanan, pembayaran tagihan, dan komplain</p>
         </div>
     </div>
 
