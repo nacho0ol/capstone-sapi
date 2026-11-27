@@ -1,17 +1,29 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $oldMetode = old('metode_bayar', 'Pending');
+    $initKategori = in_array($oldMetode, ['Cash Tunai', 'Cash Transfer', 'Tunai', 'Transfer'])
+        ? 'Cash'
+        : ($oldMetode === 'Tempo' ? 'Tempo' : 'Pending');
+    $initCashSub = in_array($oldMetode, ['Cash Transfer', 'Transfer']) ? 'Cash Transfer' : 'Cash Tunai';
+@endphp
 <div x-data="{ 
     showForm: {{ $errors->any() ? 'true' : 'false' }}, 
     selectedPelanggan: '{{ old('id_pelanggan', '') }}', 
     showPelangganForm: false, 
-    metodeBayar: '{{ old('metode_bayar', 'Tunai') }}', 
+    kategoriBayar: '{{ $initKategori }}',
+    cashSub: '{{ $initCashSub }}',
+    get metodeBayarFinal() {
+        if (this.kategoriBayar === 'Cash') return this.cashSub;
+        if (this.kategoriBayar === 'Tempo') return 'Tempo';
+        return 'Pending';
+    },
     items: {{ Js::from(old('items', [['id_produk' => '', 'qty' => 1]])) }}, 
     produks: {{ Js::from($produks) }}, 
     pelanggans: {{ Js::from($pelanggans) }}, 
     newPelanggan: {nama_pelanggan: '', no_telp: '', alamat: ''},
 
-    // Format Ribuan DP / Awal
     dpRaw: '{{ old('jumlah_terbayar', 0) }}',
     dpFormatted: '',
 
@@ -38,8 +50,8 @@
     <!-- Header Halaman -->
     <div class="flex justify-between items-center">
         <div>
-            <h1 class="text-xl font-bold text-gray-900">Daftar Orderan</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Kelola data dan status pengiriman Orderan</p>
+            <h1 class="text-xl font-bold text-gray-900">Daftar Pemesanan</h1>
+            <p class="text-xs text-gray-500 mt-0.5">Kelola data dan status pengiriman pemesanan</p>
         </div>
         <button @click="showForm = true" 
                 class="inline-flex items-center gap-1.5 bg-[#842529] hover:bg-red-900 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95">
@@ -48,11 +60,11 @@
         </button>
     </div>
 
-    <!-- FORM FILTER ORDERAN -->
+    <!-- FORM FILTER PEMESANAN -->
     <form action="{{ route('transaksi.index') }}" method="GET" class="bg-white border border-border-muted p-3 rounded-2xl shadow-sm space-y-2">
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
             <select name="pelanggan_id" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
-                <option value="">Semua Pelanggan</option>
+                <option value="">Semua Pembeli</option>
                 @foreach($pelanggans as $plg)
                     <option value="{{ $plg->id_pelanggan }}" {{ request('pelanggan_id') == $plg->id_pelanggan ? 'selected' : '' }}>
                         {{ $plg->nama_pelanggan }}
@@ -65,8 +77,10 @@
 
             <select name="metode_bayar" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                 <option value="">Semua Metode Bayar</option>
-                <option value="Tunai" {{ request('metode_bayar') == 'Tunai' ? 'selected' : '' }}>Tunai</option>
-                <option value="Transfer" {{ request('metode_bayar') == 'Transfer' ? 'selected' : '' }}>Transfer</option>
+                <option value="Pending" {{ request('metode_bayar') == 'Pending' ? 'selected' : '' }}>Pending</option>
+                <option value="Cash" {{ request('metode_bayar') == 'Cash' ? 'selected' : '' }}>Cash (Semua)</option>
+                <option value="Cash Tunai" {{ request('metode_bayar') == 'Cash Tunai' ? 'selected' : '' }}>Cash Tunai</option>
+                <option value="Cash Transfer" {{ request('metode_bayar') == 'Cash Transfer' ? 'selected' : '' }}>Cash Transfer</option>
                 <option value="Tempo" {{ request('metode_bayar') == 'Tempo' ? 'selected' : '' }}>Tempo</option>
             </select>
 
@@ -94,7 +108,7 @@
         </div>
     </form>
 
-    <!-- MODAL BUAT ORDERAN BARU -->
+    <!-- MODAL BUAT PEMESANAN BARU -->
     <div x-show="showForm" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
         <div @click.away="showForm = false" class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-5 shadow-xl relative border border-border-muted">
             <button @click="showForm = false" class="absolute top-4 right-4 text-gray-400 hover:text-[#842529] p-1 rounded-lg transition-colors">
@@ -103,14 +117,14 @@
             
             <h3 class="font-bold text-gray-900 text-sm mb-4 border-b border-border-muted pb-3 flex items-center gap-2">
                 <x-lucide-shopping-bag class="w-4 h-4 text-[#842529]" />
-                <span>Buat Orderan Baru</span>
+                <span>Buat Pemesanan Baru</span>
             </h3>
             
             @if ($errors->any())
                 <div class="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-xl text-xs mb-3 space-y-1">
                     <div class="font-bold flex items-center gap-1.5">
                         <x-lucide-alert-circle class="w-4 h-4 text-red-600 flex-shrink-0" />
-                        <span>Gagal Menyimpan Orderan:</span>
+                        <span>Gagal Menyimpan Pemesanan:</span>
                     </div>
                     <ul class="list-disc pl-5 space-y-0.5">
                         @foreach ($errors->all() as $error)
@@ -123,50 +137,60 @@
             <form action="{{ route('transaksi.store') }}" method="POST" class="space-y-3">
                 @csrf
                 <input type="hidden" name="id_user" value="{{ auth()->id() ?? 1 }}"> 
+                <input type="hidden" name="metode_bayar" :value="metodeBayarFinal">
                 
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Order</label>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Pemesanan</label>
                         <input type="date" name="tgl_order" min="2015-01-01" value="{{ old('tgl_order', date('Y-m-d')) }}" 
                                class="w-full text-xs bg-gray-50 border {{ $errors->has('tgl_order') ? 'border-red-500' : 'border-border-muted' }} p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
-                        @error('tgl_order')
-                            <p class="text-[10px] text-red-600 mt-1 font-medium">{{ $message }}</p>
-                        @enderror
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Antar</label>
                         <input type="date" name="tgl_antar" min="2015-01-01" value="{{ old('tgl_antar') }}" 
                                class="w-full text-xs bg-gray-50 border {{ $errors->has('tgl_antar') ? 'border-red-500' : 'border-border-muted' }} p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
-                        @error('tgl_antar')
-                            <p class="text-[10px] text-red-600 mt-1 font-medium">{{ $message }}</p>
-                        @enderror
                     </div>
                 </div>
                 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Pelanggan</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Pembeli</label>
                     <select name="id_pelanggan" x-model="selectedPelanggan" @change="if(selectedPelanggan === 'new') { showPelangganForm = true; selectedPelanggan = ''; }" 
                             class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
-                        <option value="">-- Pilih Pelanggan --</option>
+                        <option value="">-- Pilih Pembeli --</option>
                         <template x-for="plg in pelanggans" :key="plg.id_pelanggan">
                             <option :value="String(plg.id_pelanggan)" :selected="String(selectedPelanggan) === String(plg.id_pelanggan)" x-text="plg.nama_pelanggan + ' - ' + plg.no_telp"></option>
                         </template>
-                        <option value="new" class="font-bold text-[#842529]">+ Tambah Pelanggan Baru</option>
+                        <option value="new" class="font-bold text-[#842529]">+ Tambah Pembeli Baru</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Metode Bayar</label>
-                    <select name="metode_bayar" x-model="metodeBayar" 
-                            class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
-                        <option value="Tunai">Tunai</option>
-                        <option value="Transfer">Transfer</option>
-                        <option value="Tempo">Tempo (Piutang)</option>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Metode Pembayaran</label>
+                    <select x-model="kategoriBayar" 
+                            class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white">
+                        <option value="Pending">Pending (Belum Bayar - Default Cash)</option>
+                        <option value="Cash">Cash (Langsung Lunas)</option>
+                        <option value="Tempo">Tempo (Tagihan)</option>
                     </select>
                 </div>
 
+                <!-- Sub-Pilihan Cash: Tunai / Transfer -->
+                <div x-show="kategoriBayar === 'Cash'" x-cloak class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-2" x-transition>
+                    <label class="block text-[11px] font-bold text-emerald-900 uppercase tracking-wider">Pilih Jenis Pembayaran Cash</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2 bg-white border border-emerald-200 p-2.5 rounded-xl cursor-pointer text-xs font-semibold">
+                            <input type="radio" x-model="cashSub" value="Cash Tunai" class="accent-[#842529]">
+                            <span>Cash Tunai</span>
+                        </label>
+                        <label class="flex items-center gap-2 bg-white border border-emerald-200 p-2.5 rounded-xl cursor-pointer text-xs font-semibold">
+                            <input type="radio" x-model="cashSub" value="Cash Transfer" class="accent-[#842529]">
+                            <span>Cash Transfer</span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Box Tempo & Tagihan dengan Format Ribuan Titik -->
-                <div x-show="metodeBayar === 'Tempo'" x-cloak class="bg-sky-50 border border-sky-200 p-3 rounded-xl space-y-2" x-transition>
+                <div x-show="kategoriBayar === 'Tempo'" x-cloak class="bg-sky-50 border border-sky-200 p-3 rounded-xl space-y-2" x-transition>
                     <h4 class="text-[11px] font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1">
                         <x-lucide-receipt class="w-3.5 h-3.5 text-sky-700" />
                         <span>Data Tagihan & DP</span>
@@ -225,13 +249,13 @@
 
                 <div class="pt-3 flex gap-2">
                     <button type="button" @click="showForm = false" class="flex-1 border border-border-muted text-gray-700 py-2.5 rounded-xl font-bold text-xs hover:bg-gray-50">Batal</button>
-                    <button type="submit" class="flex-1 bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold text-xs shadow-md">Simpan Orderan</button>
+                    <button type="submit" class="flex-1 bg-[#842529] hover:bg-red-900 text-white py-2.5 rounded-xl font-bold text-xs shadow-md">Simpan Pemesanan</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL QUICK TAMBAH PELANGGAN -->
+    <!-- MODAL QUICK TAMBAH PEMBELI -->
     <div x-show="showPelangganForm" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex justify-center items-center p-4" style="display: none;">
         <div @click.away="showPelangganForm = false" class="bg-white rounded-2xl w-full max-w-sm p-5 shadow-xl relative border border-border-muted">
             <button @click="showPelangganForm = false" class="absolute top-4 right-4 text-gray-400 hover:text-[#842529] p-1 rounded-lg transition-colors">
@@ -239,12 +263,12 @@
             </button>
             <h3 class="font-bold text-gray-900 text-sm mb-3 border-b border-border-muted pb-2 flex items-center gap-2">
                 <x-lucide-user-plus class="w-4 h-4 text-[#842529]" />
-                <span>Tambah Pelanggan Baru</span>
+                <span>Tambah Pembeli Baru</span>
             </h3>
             
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Pelanggan</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Pembeli</label>
                     <input type="text" x-model="newPelanggan.nama_pelanggan" class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529]" placeholder="Cth: Pak Budi" required>
                 </div>
                 <div>
@@ -275,12 +299,12 @@
                                 selectedPelanggan = String(data.data.id_pelanggan);
                                 showPelangganForm = false;
                                 newPelanggan = {nama_pelanggan: '', no_telp: '', alamat: ''};
-                                alert('Pelanggan berhasil ditambahkan!');
+                                alert('Pembeli berhasil ditambahkan!');
                             } else if (data.errors) {
                                 const firstError = Object.values(data.errors)[0][0];
                                 alert(firstError);
                             } else {
-                                alert(data.message || 'Gagal menyimpan pelanggan, cek kembali inputan.');
+                                alert(data.message || 'Gagal menyimpan pembeli, cek kembali inputan.');
                             }
                         })
                         .catch(err => alert('Terjadi kesalahan koneksi!'));
@@ -290,7 +314,7 @@
         </div>
     </div>
 
-    <!-- LIST DATA ORDERAN -->
+    <!-- LIST DATA PEMESANAN -->
     <div class="space-y-3">
         @forelse($pesanan as $p)
             @php
@@ -325,7 +349,7 @@
                         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 mt-0.5">
                             <span class="flex items-center gap-1">
                                 <x-lucide-calendar class="w-3.5 h-3.5 text-gray-400" />
-                                <span>Order: {{ $p->tgl_order }}</span>
+                                <span>Pesan: {{ $p->tgl_order }}</span>
                             </span>
                             <span>•</span>
                             <span class="flex items-center gap-1">
@@ -369,12 +393,11 @@
                                 <span>Edit</span>
                             </a>
 
-                            <!-- Tombol Batal Menggunakan Global Dynamic Confirm Modal -->
                             <button type="button" 
                                     @click="$dispatch('confirm-action', { 
                                         action: '{{ route('transaksi.cancel', $p->id_pesanan) }}', 
-                                        title: 'Batalkan Orderan', 
-                                        message: 'Apakah Anda yakin ingin membatalkan orderan #{{ $p->id_pesanan }}?', 
+                                        title: 'Batalkan Pemesanan', 
+                                        message: 'Apakah Anda yakin ingin membatalkan pemesanan #{{ $p->id_pesanan }}?', 
                                         method: 'POST',
                                         confirmText: 'Ya, Batalkan',
                                         confirmClass: 'bg-rose-600 hover:bg-rose-700'
@@ -385,7 +408,7 @@
                             </button>
                         </div>
                     @elseif($isCancelled)
-                        <span class="inline-flex items-center justify-center gap-1 text-[10px] bg-gray-100 text-gray-400 px-2.5 py-1.5 rounded-xl font-bold w-full text-center border border-gray-200 cursor-not-allowed" title="Orderan sudah dibatalkan">
+                        <span class="inline-flex items-center justify-center gap-1 text-[10px] bg-gray-100 text-gray-400 px-2.5 py-1.5 rounded-xl font-bold w-full text-center border border-gray-200 cursor-not-allowed" title="Pemesanan sudah dibatalkan">
                             <x-lucide-ban class="w-3.5 h-3.5" />
                             <span>Dibatalkan</span>
                         </span>
@@ -395,8 +418,8 @@
         @empty
             <div class="text-center bg-white rounded-2xl border border-border-muted py-12 shadow-sm">
                 <x-lucide-shopping-bag class="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                <p class="text-gray-400 text-xs">Belum ada data orderan.</p>
-                <button @click="showForm = true" class="mt-2 text-[#842529] font-bold text-xs hover:underline">Buat Orderan Pertama</button>
+                <p class="text-gray-400 text-xs">Belum ada data pemesanan.</p>
+                <button @click="showForm = true" class="mt-2 text-[#842529] font-bold text-xs hover:underline">Buat Pemesanan Pertama</button>
             </div>
         @endforelse
     </div>

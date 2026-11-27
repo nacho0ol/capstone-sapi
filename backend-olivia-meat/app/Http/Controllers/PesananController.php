@@ -27,7 +27,11 @@ class PesananController extends Controller
             $query->where('id_pelanggan', $request->pelanggan_id);
         }
         if ($request->filled('metode_bayar')) {
-            $query->where('metode_bayar', $request->metode_bayar);
+            if ($request->metode_bayar === 'Cash') {
+                $query->whereIn('metode_bayar', ['Cash Tunai', 'Cash Transfer', 'Tunai', 'Transfer']);
+            } else {
+                $query->where('metode_bayar', $request->metode_bayar);
+            }
         }
         if ($request->filled('status_bayar')) {
             $query->where('status_bayar', $request->status_bayar);
@@ -66,7 +70,6 @@ class PesananController extends Controller
                 $count++;
             } while (Pesanan::where('id_pesanan', $id_pesanan)->exists());
 
-            // Hitung total tagihan terlebih dahulu untuk validasi DP
             $total_tagihan = 0;
             $preparedItems = [];
             foreach ($request->items as $item) {
@@ -86,11 +89,13 @@ class PesananController extends Controller
                 DB::rollBack();
                 return redirect()->back()
                     ->withInput()
-                    ->withErrors(['jumlah_terbayar' => 'Nominal DP / pembayaran awal tidak boleh melebihi total tagihan pesanan (Rp ' . number_format($total_tagihan, 0, ',', '.') . ').']);
+                    ->withErrors(['jumlah_terbayar' => 'Nominal DP / pembayaran awal tidak boleh melebihi total tagihan pemesanan (Rp ' . number_format($total_tagihan, 0, ',', '.') . ').']);
             }
 
-            $status_bayar = 'Lunas';
-            if ($request->metode_bayar === 'Tempo') {
+            // Penentuan status_bayar berdasarkan metode_bayar baru
+            if ($request->metode_bayar === 'Pending') {
+                $status_bayar = 'Unpaid';
+            } elseif ($request->metode_bayar === 'Tempo') {
                 if ($dp >= $total_tagihan && $total_tagihan > 0) {
                     $status_bayar = 'Lunas';
                 } elseif ($dp > 0) {
@@ -98,6 +103,9 @@ class PesananController extends Controller
                 } else {
                     $status_bayar = 'Unpaid';
                 }
+            } else {
+                // Cash Tunai, Cash Transfer, Tunai, Transfer -> Langsung Lunas
+                $status_bayar = 'Lunas';
             }
 
             $idUser = Auth::id() ?? $request->id_user ?? User::value('id_user') ?? 1;
@@ -160,15 +168,15 @@ class PesananController extends Controller
             DB::commit();
 
             if ($request->wantsJson()) {
-                return response()->json(['message' => 'Pesanan berhasil dibuat', 'data' => $pesanan], 201);
+                return response()->json(['message' => 'Pemesanan berhasil dibuat', 'data' => $pesanan], 201);
             }
 
-            return redirect()->route('transaksi.index')->with('success', 'Pesanan berhasil disimpan!');
+            return redirect()->route('transaksi.index')->with('success', 'Pemesanan berhasil disimpan!');
         } catch (\Exception $e) {
             DB::rollBack();
             $friendlyError = $this->formatDatabaseError($e);
             if ($request->wantsJson()) {
-                return response()->json(['message' => 'Gagal membuat pesanan', 'error' => $friendlyError], 500);
+                return response()->json(['message' => 'Gagal membuat pemesanan', 'error' => $friendlyError], 500);
             }
             return redirect()->back()->withInput()->with('error', $friendlyError);
         }
@@ -179,11 +187,11 @@ class PesananController extends Controller
         $pesanan = Pesanan::with(['pelanggan', 'detail.produk', 'piutang'])->where('is_deleted', 0)->findOrFail($id);
 
         if (in_array(strtolower($pesanan->status_pemesanan), ['ditolak', 'dibatalkan'])) {
-            return redirect()->route('transaksi.index')->with('error', 'Pesanan yang sudah dibatalkan tidak dapat diubah.');
+            return redirect()->route('transaksi.index')->with('error', 'Pemesanan yang sudah dibatalkan tidak dapat diubah.');
         }
 
         $pelanggans = Pelanggan::where('is_deleted', 0)
-            ->orWhere('id_pelanggan', $pesanan->id_pelanggan)
+            ->orWhere('id_pelanggan',$pesanan->id_pelanggan)
             ->orderBy('nama_pelanggan')
             ->get();
 
@@ -192,24 +200,22 @@ class PesananController extends Controller
         return view('transaksi.edit', compact('pesanan', 'pelanggans', 'produks'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request,$id)
     {
         $pesanan = Pesanan::where('is_deleted', 0)->findOrFail($id);
 
         if (in_array(strtolower($pesanan->status_pemesanan), ['ditolak', 'dibatalkan'])) {
-            return redirect()->route('transaksi.index')->with('error', 'Pesanan yang sudah dibatalkan tidak dapat diubah.');
+            return redirect()->route('transaksi.index')->with('error', 'Pemesanan yang sudah dibatalkan tidak dapat diubah.');
         }
 
-        $this->validasiPesanan($request, false, $pesanan->id_pelanggan);
+        $this->validasiPesanan($request, false,$pesanan->id_pelanggan);
 
         DB::beginTransaction();
         try {
             $total_tagihan = 0;
             $preparedItems = [];
-            foreach ($request->items as $item) {
-                $produk = Produk::findOrFail($item['id_produk']);
-                $subtotal = (int) round($item['qty'] * $produk->harga_jual);
-                $total_tagihan += $subtotal;
+            foreach ($request->items as $item) {$produk = Produk::findOrFail($item['id_produk']);$subtotal = (int) round($item['qty'] *$produk->harga_jual);
+                $total_tagihan +=$subtotal;
                 $preparedItems[] = [
                     'id_produk' => $produk->id_produk,
                     'qty' => $item['qty'],
@@ -218,25 +224,25 @@ class PesananController extends Controller
                 ];
             }
 
-            $piutang = Piutang::where('id_pesanan', $pesanan->id_pesanan)->first();
+            $piutang = Piutang::where('id_pesanan',$pesanan->id_pesanan)->first();
             $dp = (int) ($request->jumlah_terbayar ?? ($piutang ? $piutang->jumlah_terbayar : 0));
 
-            if ($request->metode_bayar === 'Tempo' && $dp > $total_tagihan) {
+            if ($request->metode_bayar === 'Tempo' && $dp >$total_tagihan) {
                 DB::rollBack();
                 return redirect()->back()
                     ->withInput()
-                    ->withErrors(['jumlah_terbayar' => 'Nominal DP / pembayaran tidak boleh melebihi total tagihan pesanan (Rp ' . number_format($total_tagihan, 0, ',', '.') . ').']);
+                    ->withErrors(['jumlah_terbayar' => 'Nominal DP / pembayaran tidak boleh melebihi total tagihan pemesanan (Rp ' . number_format($total_tagihan, 0, ',', '.') . ').']);
             }
 
-            $status_bayar = 'Lunas';
-            if ($request->metode_bayar === 'Tempo') {
-                if ($dp >= $total_tagihan && $total_tagihan > 0) {
-                    $status_bayar = 'Lunas';
-                } elseif ($dp > 0) {
-                    $status_bayar = 'DP';
+            if ($request->metode_bayar === 'Pending') {$status_bayar = 'Unpaid';
+            } elseif ($request->metode_bayar === 'Tempo') {
+                if ($dp >=$total_tagihan && $total_tagihan > 0) {$status_bayar = 'Lunas';
+                } elseif ($dp > 0) {$status_bayar = 'DP';
                 } else {
                     $status_bayar = 'Unpaid';
                 }
+            } else {
+                $status_bayar = 'Lunas';
             }
 
             $updateData = [
@@ -248,17 +254,16 @@ class PesananController extends Controller
             ];
 
             if (Schema::hasColumn('pesanans', 'catatan')) {
-                $updateData['catatan'] = $request->catatan;
+                $updateData['catatan'] =$request->catatan;
             }
 
             $pesanan->update($updateData);
 
             PesananDetail::where('id_pesanan', $pesanan->id_pesanan)->delete();
 
-            $subtotalGenerated = $this->isSubtotalGenerated();
+            $subtotalGenerated =$this->isSubtotalGenerated();
 
-            foreach ($preparedItems as $itemData) {
-                $detailPayload = [
+            foreach ($preparedItems as $itemData) {$detailPayload = [
                     'id_pesanan' => $pesanan->id_pesanan,
                     'id_produk' => $itemData['id_produk'],
                     'qty' => $itemData['qty'],
@@ -267,24 +272,20 @@ class PesananController extends Controller
                 ];
 
                 if (!$subtotalGenerated) {
-                    $detailPayload['subtotal'] = $itemData['subtotal'];
+                    $detailPayload['subtotal'] =$itemData['subtotal'];
                 }
 
                 PesananDetail::create($detailPayload);
             }
 
-            if ($request->metode_bayar === 'Tempo') {
-                $status_piutang = 'Belum Lunas';
-                if ($dp > 0 && $dp < $total_tagihan) {
-                    $status_piutang = 'Sebagian';
-                } elseif ($dp >= $total_tagihan) {
-                    $status_piutang = 'Lunas';
+            if ($request->metode_bayar === 'Tempo') {$status_piutang = 'Belum Lunas';
+                if ($dp > 0 &&$dp < $total_tagihan) {$status_piutang = 'Sebagian';
+                } elseif ($dp >= $total_tagihan) {$status_piutang = 'Lunas';
                 }
 
                 $tglJatuhTempo = $request->tgl_jatuh_tempo ?? ($piutang ? $piutang->tgl_jatuh_tempo : date('Y-m-d', strtotime($request->tgl_order . ' +7 days')));
 
-                if ($piutang) {
-                    $piutang->update([
+                if ($piutang) {$piutang->update([
                         'tgl_jatuh_tempo' => $tglJatuhTempo,
                         'total_tagihan' => $total_tagihan,
                         'jumlah_terbayar' => $dp,
@@ -302,70 +303,67 @@ class PesananController extends Controller
                     ]);
                 }
             } else {
-                if ($piutang) {
-                    $piutang->update(['is_deleted' => 1]);
+                if ($piutang) {$piutang->update(['is_deleted' => 1]);
                 }
             }
 
             DB::commit();
-            return redirect()->route('transaksi.index')->with('success', 'Pesanan berhasil diperbarui!');
+            return redirect()->route('transaksi.index')->with('success', 'Pemesanan berhasil diperbarui!');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->withInput()->with('error', $this->formatDatabaseError($e));
         }
     }
 
-    public function cancel($id, Request $request)
+    public function cancel($id, Request$request)
     {
         $pesanan = Pesanan::where('is_deleted', 0)->findOrFail($id);
 
         if (in_array(strtolower($pesanan->status_pemesanan), ['ditolak', 'dibatalkan'])) {
             if ($request->wantsJson()) {
-                return response()->json(['message' => 'Pesanan ini sudah dibatalkan sebelumnya.'], 422);
+                return response()->json(['message' => 'Pemesanan ini sudah dibatalkan sebelumnya.'], 422);
             }
-            return redirect()->back()->with('error', 'Pesanan ini sudah dibatalkan sebelumnya.');
+            return redirect()->back()->with('error', 'Pemesanan ini sudah dibatalkan sebelumnya.');
         }
 
         if (strtolower($pesanan->status_pemesanan) === 'selesai') {
             if ($request->wantsJson()) {
-                return response()->json(['message' => 'Pesanan yang sudah selesai tidak dapat dibatalkan.'], 422);
+                return response()->json(['message' => 'Pemesanan yang sudah selesai tidak dapat dibatalkan.'], 422);
             }
-            return redirect()->back()->with('error', 'Pesanan yang sudah selesai tidak dapat dibatalkan.');
+            return redirect()->back()->with('error', 'Pemesanan yang sudah selesai tidak dapat dibatalkan.');
         }
 
         DB::beginTransaction();
         try {
-            $pesanan->status_pemesanan = $this->supportsDibatalkanStatus() ? 'Dibatalkan' : 'Ditolak';
-            $pesanan->save();
+            $pesanan->status_pemesanan = $this->supportsDibatalkanStatus() ? 'Dibatalkan' : 'Ditolak';$pesanan->save();
 
             if ($pesanan->metode_bayar === 'Tempo') {
-                $piutang = Piutang::where('id_pesanan', $pesanan->id_pesanan)->first();
-                if ($piutang) {
-                    $piutang->is_deleted = 1;
+                $piutang = Piutang::where('id_pesanan',$pesanan->id_pesanan)->first();
+                if ($piutang) {$piutang->is_deleted = 1;
                     $piutang->save();
                 }
             }
             DB::commit();
 
             if ($request->wantsJson()) {
-                return response()->json(['message' => 'Pesanan berhasil dibatalkan']);
+                return response()->json(['message' => 'Pemesanan berhasil dibatalkan']);
             }
-            return redirect()->back()->with('success', 'Pesanan berhasil dibatalkan!');
+            return redirect()->back()->with('success', 'Pemesanan berhasil dibatalkan!');
         } catch (\Exception $e) {
             DB::rollBack();
             $friendlyError = $this->formatDatabaseError($e);
             if ($request->wantsJson()) {
-                return response()->json(['message' => 'Gagal membatalkan pesanan', 'error' => $friendlyError], 500);
+                return response()->json(['message' => 'Gagal membatalkan pemesanan', 'error' => $friendlyError], 500);
             }
             return redirect()->back()->with('error', $friendlyError);
         }
     }
 
-    private function validasiPesanan(Request $request, bool $isStore = true, $currentPelangganId = null): void
+    private function validasiPesanan(Request $request, bool $isStore = true,$currentPelangganId = null): void
     {
         $pelangganRule = Rule::exists('pelanggans', 'id_pelanggan')->where(function ($query) use ($currentPelangganId) {
             if ($currentPelangganId) {
-                $query->where('is_deleted', 0)->orWhere('id_pelanggan', $currentPelangganId);
+                $query->where('is_deleted', 0)->orWhere('id_pelanggan',$currentPelangganId);
             } else {
                 $query->where('is_deleted', 0);
             }
@@ -374,7 +372,7 @@ class PesananController extends Controller
         $rules = [
             'id_pelanggan'      => ['required', $pelangganRule],
             'tgl_order'         => 'required|date|after_or_equal:2015-01-01|before_or_equal:2100-12-31',
-            'metode_bayar'      => 'required|in:Tunai,Transfer,Tempo',
+            'metode_bayar'      => 'required|in:Pending,Cash Tunai,Cash Transfer,Tunai,Transfer,Tempo',
             'tgl_antar'         => 'required|date|after_or_equal:2015-01-01|after_or_equal:tgl_order|before_or_equal:2100-12-31',
             'items'             => 'required|array|min:1',
             'items.*.id_produk' => [
@@ -387,26 +385,25 @@ class PesananController extends Controller
             'catatan'           => 'nullable|string|max:500',
         ];
 
-        if ($isStore) {
-            $rules['id_user'] = 'nullable|exists:users,id_user';
+        if ($isStore) {$rules['id_user'] = 'nullable|exists:users,id_user';
         }
 
         $messages = [
-            'id_pelanggan.required'          => 'Pelanggan wajib dipilih.',
-            'id_pelanggan.exists'            => 'Pelanggan yang dipilih tidak valid atau sudah dihapus.',
+            'id_pelanggan.required'          => 'Pembeli wajib dipilih.',
+            'id_pelanggan.exists'            => 'Pembeli yang dipilih tidak valid atau sudah dihapus.',
             'id_user.exists'                 => 'Data pengguna tidak valid.',
-            'tgl_order.required'             => 'Tanggal order wajib diisi.',
-            'tgl_order.date'                 => 'Format tanggal order tidak valid.',
-            'tgl_order.after_or_equal'       => 'Tanggal order tidak valid (minimal tahun 2015).',
-            'tgl_order.before_or_equal'      => 'Tanggal order tidak valid.',
-            'metode_bayar.required'          => 'Metode bayar wajib dipilih.',
-            'metode_bayar.in'                => 'Metode bayar harus Tunai, Transfer, atau Tempo.',
+            'tgl_order.required'             => 'Tanggal pemesanan wajib diisi.',
+            'tgl_order.date'                 => 'Format tanggal pemesanan tidak valid.',
+            'tgl_order.after_or_equal'       => 'Tanggal pemesanan tidak valid (minimal tahun 2015).',
+            'tgl_order.before_or_equal'      => 'Tanggal pemesanan tidak valid.',
+            'metode_bayar.required'          => 'Metode pembayaran wajib dipilih.',
+            'metode_bayar.in'                => 'Metode pembayaran harus Pending, Cash (Tunai/Transfer), atau Tempo.',
             'tgl_antar.required'             => 'Tanggal antar wajib diisi.',
             'tgl_antar.date'                 => 'Format tanggal antar tidak valid.',
-            'tgl_antar.after_or_equal'       => 'Tanggal antar tidak boleh kurang dari tanggal order (dan minimal tahun 2015).',
+            'tgl_antar.after_or_equal'       => 'Tanggal antar tidak boleh kurang dari tanggal pemesanan (dan minimal tahun 2015).',
             'tgl_antar.before_or_equal'      => 'Tanggal antar tidak valid.',
-            'items.required'                 => 'Minimal harus ada 1 item produk dalam pesanan.',
-            'items.min'                      => 'Minimal harus ada 1 item produk dalam pesanan.',
+            'items.required'                 => 'Minimal harus ada 1 item produk dalam pemesanan.',
+            'items.min'                      => 'Minimal harus ada 1 item produk dalam pemesanan.',
             'items.*.id_produk.required'     => 'Produk pada setiap baris item wajib dipilih.',
             'items.*.id_produk.exists'       => 'Produk yang dipilih tidak tersedia atau sudah dihapus.',
             'items.*.qty.required'           => 'Jumlah (Qty) produk wajib diisi.',
@@ -415,14 +412,14 @@ class PesananController extends Controller
             'items.*.qty.max'                => 'Jumlah (Qty) produk melebihi batas maksimal.',
             'tgl_jatuh_tempo.required_if'    => 'Tanggal jatuh tempo wajib diisi untuk metode bayar Tempo.',
             'tgl_jatuh_tempo.date'           => 'Format tanggal jatuh tempo tidak valid.',
-            'tgl_jatuh_tempo.after_or_equal' => 'Tanggal jatuh tempo tidak boleh kurang dari tanggal order.',
+            'tgl_jatuh_tempo.after_or_equal' => 'Tanggal jatuh tempo tidak boleh kurang dari tanggal pemesanan.',
             'tgl_jatuh_tempo.before_or_equal'=> 'Tanggal jatuh tempo tidak valid.',
             'jumlah_terbayar.numeric'        => 'Nominal DP / pembayaran awal harus berupa angka.',
             'jumlah_terbayar.min'            => 'Nominal DP / pembayaran awal tidak boleh kurang dari 0.',
-            'catatan.max'                    => 'Catatan pesanan maksimal 500 karakter.',
+            'catatan.max'                    => 'Catatan pemesanan maksimal 500 karakter.',
         ];
 
-        $request->validate($rules, $messages);
+        $request->validate($rules,$messages);
     }
 
     private function isSubtotalGenerated(): bool
@@ -459,13 +456,13 @@ class PesananController extends Controller
 
     private function formatDatabaseError(\Exception $e): string
     {
-        $msg = $e->getMessage();
+        $msg =$e->getMessage();
 
         if (stripos($msg, 'chk_tgl_antar') !== false || stripos($msg, 'tgl_antar') !== false) {
-            return 'Tanggal antar tidak valid. Pastikan tanggal antar minimal tahun 2015 dan tidak kurang dari tanggal order.';
+            return 'Tanggal antar tidak valid. Pastikan tanggal antar minimal tahun 2015 dan tidak kurang dari tanggal pemesanan.';
         }
         if (stripos($msg, 'chk_tgl_order') !== false || stripos($msg, 'tgl_order') !== false) {
-            return 'Tanggal order tidak valid. Pastikan tanggal order minimal tahun 2015.';
+            return 'Tanggal pemesanan tidak valid. Pastikan tanggal pemesanan minimal tahun 2015.';
         }
         if (stripos($msg, 'chk_qty') !== false || stripos($msg, "column 'qty'") !== false) {
             return 'Jumlah (Qty) produk tidak valid atau melebihi kapasitas maksimal.';
@@ -474,25 +471,25 @@ class PesananController extends Controller
             return 'Nominal DP / pembayaran tidak boleh melebihi total tagihan atau kurang dari 0.';
         }
         if (stripos($msg, 'chk_total_tagihan') !== false) {
-            return 'Total tagihan pesanan tidak valid (maksimal Rp 100.000.000).';
+            return 'Total tagihan pemesanan tidak valid (maksimal Rp 100.000.000).';
         }
         if (stripos($msg, 'SQLSTATE') !== false) {
-            return 'Gagal memproses data pesanan. Pastikan seluruh tanggal dan data produk sudah diisi dengan benar.';
+            return 'Gagal memproses data pemesanan. Pastikan seluruh tanggal dan data produk sudah diisi dengan benar.';
         }
 
         return 'Terjadi kesalahan: ' . $msg;
     }
 
-    public function updateKomplain(Request $request, $id)
-{
-    $request->validate([
-        'catatan' => 'nullable|string',
-    ]);
+    public function updateKomplain(Request $request,$id)
+    {
+        $request->validate([
+            'catatan' => 'nullable|string',
+        ]);
 
-    Pesanan::where('id_pesanan', $id)->update([
-        'catatan' => $request->catatan,
-    ]);
+        Pesanan::where('id_pesanan', $id)->update([
+            'catatan' => $request->catatan,
+        ]);
 
-    return redirect()->back()->with('success', 'Komplain / catatan pesanan berhasil diperbarui!');
-}
+        return redirect()->back()->with('success', 'Komplain / catatan pemesanan berhasil diperbarui!');
+    }
 }

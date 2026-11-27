@@ -6,7 +6,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
             <h1 class="text-xl font-bold text-gray-900">Data Produk & Jagal</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Kelola daftar produk daging serta mitra jagal / RPH</p>
+            <p class="text-xs text-gray-500 mt-0.5">Kelola daftar produk daging, foto katalog, serta mitra jagal / RPH</p>
         </div>
     </div>
 
@@ -65,12 +65,30 @@
                 hargaAwalFormatted: '',
                 hargaJualRaw: '{{ old('form_type') == 'create_produk' ? old('harga_jual') : '' }}',
                 hargaJualFormatted: '',
+                previewFoto: null,
+                fotoName: '',
 
                 formatRupiah(val) {
                     let number = String(val).replace(/\D/g, '');
                     if (!number) return { raw: '', formatted: '' };
                     let formatted = new Intl.NumberFormat('id-ID').format(number);
                     return { raw: number, formatted: formatted };
+                },
+
+                onFileChange(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        this.previewFoto = URL.createObjectURL(file);
+                        this.fotoName = file.name;
+                    }
+                },
+
+                clearAddFoto() {
+                    this.previewFoto = null;
+                    this.fotoName = '';
+                    if (this.$refs.fotoAddInput) {
+                        this.$refs.fotoAddInput.value = '';
+                    }
                 },
 
                 init() {
@@ -95,7 +113,7 @@
                                 <x-lucide-x class="w-5 h-5" />
                             </button>
                         </div>
-                        <form action="{{ route('produk.store') }}" method="POST" class="p-4 space-y-3">
+                        <form action="{{ route('produk.store') }}" method="POST" enctype="multipart/form-data" class="p-4 space-y-3">
                             @csrf
                             <input type="hidden" name="form_type" value="create_produk">
                             
@@ -108,6 +126,44 @@
                                     </ul>
                                 </div>
                             @endif
+
+                            <!-- Upload & Preview Foto Produk -->
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Foto Produk (Opsional)</label>
+                                <div class="flex items-center gap-3 bg-gray-50 border border-border-muted p-2.5 rounded-xl">
+                                    <div style="width: 76px; height: 76px; min-width: 76px;" class="rounded-xl bg-white border border-border-muted flex items-center justify-center overflow-hidden">
+                                        <template x-if="previewFoto">
+                                            <img :src="previewFoto" alt="Preview Foto" style="width: 100%; height: 100%; object-fit: cover;">
+                                        </template>
+                                        <template x-if="!previewFoto">
+                                            <div class="flex flex-col items-center justify-center text-gray-400">
+                                                <x-lucide-image class="w-6 h-6" />
+                                                <span class="text-[9px] mt-0.5">No Foto</span>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <div class="flex-1 min-w-0 space-y-1.5">
+                                        <input type="file" x-ref="fotoAddInput" name="foto" accept="image/jpeg,image/png,image/webp" @change="onFileChange($event)" style="display: none;">
+                                        
+                                        <div class="flex flex-wrap items-center gap-1.5">
+                                            <button type="button" @click="$refs.fotoAddInput.click()"
+                                                    class="inline-flex items-center gap-1.5 bg-[#FAE2E2] hover:bg-red-100 text-[#842529] px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                                                <x-lucide-camera class="w-3.5 h-3.5" />
+                                                <span x-text="previewFoto ? 'Ganti Foto' : 'Pilih Foto'"></span>
+                                            </button>
+
+                                            <button type="button" x-show="previewFoto" @click="clearAddFoto()"
+                                                    class="inline-flex items-center gap-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors">
+                                                <x-lucide-x class="w-3 h-3" />
+                                                <span>Hapus</span>
+                                            </button>
+                                        </div>
+
+                                        <p class="text-[11px] text-gray-500 truncate" x-text="fotoName ? fotoName : 'JPG, PNG, WEBP (Maks. 2MB)'"></p>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Produk</label>
@@ -176,18 +232,43 @@
             <div class="space-y-2">
                 <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Daftar Produk Terdaftar</h3>
                 @forelse($produk as $p)
+                    @php
+                        $fotoUrl = $p->foto ? asset('storage/' . $p->foto) : '';
+                    @endphp
                     <div x-data="{ 
                         openEdit: {{ old('id_produk') == $p->id_produk && $errors->any() ? 'true' : 'false' }},
                         hargaAwalRaw: '{{ old('id_produk') == $p->id_produk ? old('harga_awal') : $p->harga_awal }}',
                         hargaAwalFormatted: '',
                         hargaJualRaw: '{{ old('id_produk') == $p->id_produk ? old('harga_jual') : $p->harga_jual }}',
                         hargaJualFormatted: '',
+                        originalFoto: '{{ $fotoUrl }}',
+                        previewEditFoto: '{{ $fotoUrl }}',
+                        editFotoName: '',
+                        isFotoChanged: false,
 
                         formatRupiah(val) {
                             let number = String(val).replace(/\D/g, '');
                             if (!number) return { raw: '', formatted: '' };
                             let formatted = new Intl.NumberFormat('id-ID').format(number);
                             return { raw: number, formatted: formatted };
+                        },
+
+                        onEditFileChange(e) {
+                            const file = e.target.files[0];
+                            if (file) {
+                                this.previewEditFoto = URL.createObjectURL(file);
+                                this.editFotoName = file.name;
+                                this.isFotoChanged = true;
+                            }
+                        },
+
+                        resetEditFoto() {
+                            this.previewEditFoto = this.originalFoto;
+                            this.editFotoName = '';
+                            this.isFotoChanged = false;
+                            if (this.$refs.fotoEditInput) {
+                                this.$refs.fotoEditInput.value = '';
+                            }
                         },
 
                         init() {
@@ -197,19 +278,30 @@
                     }" 
                          class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm hover:border-gray-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         
-                        <div class="space-y-1">
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold text-gray-900 text-sm">{{ $p->nama_produk }}</span>
-                                <span class="text-[10px] bg-[#FAE2E2] text-[#842529] font-semibold px-2 py-0.5 rounded-md">
-                                    {{ $p->kategori }}
-                                </span>
+                        <div class="flex items-center gap-3">
+                            <!-- Thumbnail Foto Produk -->
+                            <div style="width: 56px; height: 56px; min-width: 56px;" class="rounded-xl bg-gray-100 border border-border-muted flex items-center justify-center overflow-hidden">
+                                @if($p->foto)
+                                    <img src="{{ asset('storage/' . $p->foto) }}" alt="{{ $p->nama_produk }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                @else
+                                    <x-lucide-beef class="w-6 h-6 text-[#842529]/50" />
+                                @endif
                             </div>
-                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
-                                <span>Harga Jual: <strong class="text-emerald-700">Rp {{ number_format($p->harga_jual, 0, ',', '.') }}</strong></span>
-                                <span class="text-gray-300">•</span>
-                                <span>Modal Jagal: Rp {{ number_format($p->harga_awal, 0, ',', '.') }}</span>
-                                <span class="text-gray-300">•</span>
-                                <span>Jagal: <strong class="text-gray-700">{{ $p->jagal->nama_jagal ?? $p->nama_jagal ?? '-' }}</strong></span>
+
+                            <div class="space-y-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="font-bold text-gray-900 text-sm">{{ $p->nama_produk }}</span>
+                                    <span class="text-[10px] bg-[#FAE2E2] text-[#842529] font-semibold px-2 py-0.5 rounded-md">
+                                        {{ $p->kategori }}
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                                    <span>Harga Jual: <strong class="text-emerald-700">Rp {{ number_format($p->harga_jual, 0, ',', '.') }}</strong></span>
+                                    <span class="text-gray-300">•</span>
+                                    <span>Modal Jagal: Rp {{ number_format($p->harga_awal, 0, ',', '.') }}</span>
+                                    <span class="text-gray-300">•</span>
+                                    <span>Jagal: <strong class="text-gray-700">{{ $p->jagal->nama_jagal ?? $p->nama_jagal ?? '-' }}</strong></span>
+                                </div>
                             </div>
                         </div>
 
@@ -246,10 +338,49 @@
                                         <x-lucide-x class="w-5 h-5" />
                                     </button>
                                 </div>
-                                <form action="{{ route('produk.update', $p->id_produk) }}" method="POST" class="p-4 space-y-3">
+                                <form action="{{ route('produk.update', $p->id_produk) }}" method="POST" enctype="multipart/form-data" class="p-4 space-y-3">
                                     @csrf
                                     @method('PUT')
                                     <input type="hidden" name="id_produk" value="{{ $p->id_produk }}">
+
+                                    <!-- Preview & Ganti Foto Produk -->
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">Foto Produk</label>
+                                        <div class="flex items-center gap-3 bg-gray-50 border border-border-muted p-2.5 rounded-xl">
+                                            <div style="width: 76px; height: 76px; min-width: 76px;" class="rounded-xl bg-white border border-border-muted flex items-center justify-center overflow-hidden">
+                                                <template x-if="previewEditFoto">
+                                                    <img :src="previewEditFoto" alt="Foto Produk" style="width: 100%; height: 100%; object-fit: cover;">
+                                                </template>
+                                                <template x-if="!previewEditFoto">
+                                                    <div class="flex flex-col items-center justify-center text-gray-400">
+                                                        <x-lucide-image class="w-6 h-6" />
+                                                        <span class="text-[9px] mt-0.5">No Foto</span>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <div class="flex-1 min-w-0 space-y-1.5">
+                                                <input type="file" x-ref="fotoEditInput" name="foto" accept="image/jpeg,image/png,image/webp" @change="onEditFileChange($event)" style="display: none;">
+                                                
+                                                <div class="flex flex-wrap items-center gap-1.5">
+                                                    <button type="button" @click="$refs.fotoEditInput.click()"
+                                                            class="inline-flex items-center gap-1.5 bg-[#FAE2E2] hover:bg-red-100 text-[#842529] px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                                                        <x-lucide-camera class="w-3.5 h-3.5" />
+                                                        <span x-text="previewEditFoto ? 'Ganti Foto' : 'Upload Foto'"></span>
+                                                    </button>
+
+                                                    <button type="button" x-show="isFotoChanged" @click="resetEditFoto()"
+                                                            class="inline-flex items-center gap-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors">
+                                                        <x-lucide-rotate-ccw class="w-3 h-3" />
+                                                        <span>Batal Ganti</span>
+                                                    </button>
+                                                </div>
+
+                                                <p class="text-[11px] text-gray-500 truncate" 
+                                                   x-text="isFotoChanged ? ('Foto baru: ' + editFotoName) : (previewEditFoto ? 'Foto saat ini terpasang' : 'Belum ada foto (Maks. 2MB)')"></p>
+                                            </div>
+                                        </div>
+                                    </div>
                                     
                                     <div>
                                         <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Produk</label>

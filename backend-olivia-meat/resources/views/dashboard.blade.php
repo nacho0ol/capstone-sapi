@@ -5,12 +5,12 @@
     <!-- Header Dashboard -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h1 class="text-xl font-bold text-gray-900">Ringkasan Keuangan</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Monitoring pemesanan, pemasokan daging, & tagihan Olivia Meat N Fresh</p>
+            <h1 class="text-xl font-bold text-gray-900">Ringkasan Pembayaran</h1>
+            <p class="text-xs text-gray-500 mt-0.5">Monitoring pemesanan, pengadaan produk, & tagihan Olivia Meat N Fresh</p>
         </div>
     </div>
 
-    <!-- Tombol Aksi Cepat (Pemesanan, Pemasokan Daging, Pengeluaran) -->
+    <!-- Tombol Aksi Cepat (Pemesanan, Pengadaan Produk, Pengeluaran) -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <a href="{{ route('transaksi.index') }}" 
            class="flex items-center justify-center gap-2 bg-[#842529] hover:bg-red-900 text-white py-2.5 px-4 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95">
@@ -21,7 +21,7 @@
         <a href="{{ route('pemasokan.index') }}" 
            class="flex items-center justify-center gap-2 bg-[#842529] hover:bg-red-900 text-white py-2.5 px-4 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95">
             <x-lucide-truck class="w-4 h-4 text-white" />
-            <span>Catat Pemasokan Daging</span>
+            <span>Catat Pengadaan Produk</span>
         </a>
 
         <a href="{{ route('keuangan.index', ['tab' => 'pengeluaran']) }}" 
@@ -96,10 +96,10 @@
         </div>
     </div>
 
-    <!-- Grid 2 Kolom: List Pemesanan Hari Ini & Pemasokan Daging Hari Ini -->
+    <!-- Grid 2 Kolom: List Pemesanan Hari Ini & Pengadaan Produk Hari Ini -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         
-        <!-- CARD 1: PESANAN HARI INI -->
+        <!-- CARD 1: PEMESANAN HARI INI -->
         <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm space-y-3">
             <div class="flex items-center justify-between border-b border-border-muted pb-3">
                 <div class="flex items-center gap-2">
@@ -114,7 +114,7 @@
 
                 <div class="flex items-center gap-2">
                     <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#FAE2E2] text-[#842529]">
-                        {{ $orderanHariIni->count() }} Order
+                        {{ $orderanHariIni->count() }} Pemesanan
                     </span>
                     <a href="{{ route('transaksi.index') }}" class="text-xs font-bold text-[#842529] hover:underline flex items-center gap-1">
                         <span>Semua</span>
@@ -129,6 +129,7 @@
                         $totalOrder = $ord->detail->sum('subtotal');
                         $statusLower = strtolower($ord->status_pemesanan);
                         $isCancelled = in_array($statusLower, ['ditolak', 'dibatalkan']);
+                        $statusLabel = $isCancelled ? 'Dibatalkan' : ucfirst($ord->status_pemesanan);
                     @endphp
                     <div class="bg-gray-50 border border-border-muted rounded-xl p-3 text-xs space-y-1.5">
                         <div class="flex flex-wrap items-center justify-between gap-2">
@@ -140,7 +141,7 @@
 
                             <div class="flex items-center gap-1.5">
                                 <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border {{ $isCancelled ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-sky-50 border-sky-200 text-sky-700' }}">
-                                    {{ ucfirst($ord->status_pemesanan) }}
+                                    {{ $statusLabel }}
                                 </span>
                                 <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border {{ $ord->status_bayar == 'Lunas' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700' }}">
                                     {{ $ord->status_bayar }}
@@ -166,7 +167,7 @@
             </div>
         </div>
 
-        <!-- CARD 2: PEMASOKAN DAGING HARI INI -->
+        <!-- CARD 2: PENGADAAN PRODUK HARI INI -->
         <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm space-y-3">
             <div class="flex items-center justify-between border-b border-border-muted pb-3">
                 <div class="flex items-center gap-2">
@@ -174,7 +175,7 @@
                         <x-lucide-truck class="w-4 h-4" />
                     </div>
                     <div>
-                        <h3 class="text-sm font-bold text-gray-900">Pemasokan Daging Hari Ini</h3>
+                        <h3 class="text-sm font-bold text-gray-900">Pengadaan Produk Hari Ini</h3>
                         <p class="text-[11px] text-gray-400">{{ date('d M Y') }}</p>
                     </div>
                 </div>
@@ -214,7 +215,7 @@
                 @empty
                     <div class="text-center py-8">
                         <x-lucide-truck class="w-8 h-8 text-gray-300 mx-auto mb-1.5" />
-                        <p class="text-xs text-gray-400">Belum ada pemasokan daging hari ini.</p>
+                        <p class="text-xs text-gray-400">Belum ada pengadaan produk hari ini.</p>
                     </div>
                 @endforelse
             </div>

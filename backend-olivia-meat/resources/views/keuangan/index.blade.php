@@ -6,8 +6,8 @@
     <!-- Header Halaman & Tombol Pengaturan Notifikasi -->
     <div class="flex justify-between items-center">
         <div>
-            <h1 class="text-xl font-bold text-gray-900">Keuangan & Laporan</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Analisis laba rugi, daftar pemesanan, tagihan, dan pengeluaran operasional</p>
+            <h1 class="text-xl font-bold text-gray-900">Pembayaran & Laporan</h1>
+            <p class="text-xs text-gray-500 mt-0.5">Analisis laba rugi, riwayat payment, tagihan, dan pengeluaran operasional</p>
         </div>
         <button @click="showSetting = true" 
                 class="inline-flex items-center gap-2 bg-white hover:bg-[#FAE2E2] text-[#842529] border border-border-muted px-3 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all active:scale-95 focus:outline-none" 
@@ -16,7 +16,7 @@
         </button>
     </div>
 
-    <!-- Tab Navigasi Keuangan -->
+    <!-- Tab Navigasi Pembayaran -->
     <div class="flex border-b border-border-muted overflow-x-auto no-scrollbar">
         <a href="{{ route('keuangan.index', ['tab' => 'labarugi']) }}" 
            class="py-3 px-4 sm:px-6 text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 {{ $tab == 'labarugi' ? 'border-b-2 border-[#842529] text-[#842529]' : 'text-gray-500 hover:text-gray-700' }}">
@@ -26,7 +26,7 @@
         <a href="{{ route('keuangan.index', ['tab' => 'riwayat']) }}" 
            class="py-3 px-4 sm:px-6 text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 {{ $tab == 'riwayat' ? 'border-b-2 border-[#842529] text-[#842529]' : 'text-gray-500 hover:text-gray-700' }}">
             <x-lucide-history class="w-4 h-4" />
-            <span>Daftar Pemesanan</span>
+            <span>Payment</span>
         </a>
         <a href="{{ route('keuangan.index', ['tab' => 'piutang']) }}" 
            class="py-3 px-4 sm:px-6 text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 {{ $tab == 'piutang' ? 'border-b-2 border-[#842529] text-[#842529]' : 'text-gray-500 hover:text-gray-700' }}">
@@ -43,8 +43,6 @@
     <!-- ================= ISI TAB 1: LABA RUGI ================= -->
     @if($tab == 'labarugi')
         <div class="space-y-4">
-            
-            <!-- FORM FILTER WAKTU & TANGGAL LABA RUGI -->
             <form action="{{ route('keuangan.index') }}" method="GET" class="bg-white border border-border-muted p-3 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-2">
                 <input type="hidden" name="tab" value="labarugi">
                 
@@ -99,7 +97,6 @@
 
             <!-- Grid 3 Komponen Laba Rugi -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <!-- 1. Uang Masuk dari Pemesanan -->
                 <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium text-gray-500 mb-1">Uang Masuk dari Pemesanan</p>
@@ -111,7 +108,6 @@
                     </div>
                 </div>
 
-                <!-- 2. Yang Harus Dibayarkan ke Jagal -->
                 <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium text-gray-500 mb-1">Dibayarkan ke Jagal</p>
@@ -123,7 +119,6 @@
                     </div>
                 </div>
 
-                <!-- 3. Pengeluaran Operasional -->
                 <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium text-gray-500 mb-1">Pengeluaran Operasional</p>
@@ -137,11 +132,11 @@
             </div>
         </div>   
         
-    <!-- ================= ISI TAB 2: DAFTAR PESANAN ================= -->
+    <!-- ================= ISI TAB 2: PAYMENT ================= -->
     @elseif($tab == 'riwayat')
         <div class="space-y-3">
             
-            <!-- FORM PENCARIAN & FILTER PESANAN -->
+            <!-- FORM PENCARIAN & FILTER PAYMENT -->
             <form action="{{ route('keuangan.index') }}" method="GET" class="bg-gray-50 border border-border-muted p-3 rounded-2xl mb-4 space-y-3">
                 <input type="hidden" name="tab" value="riwayat"> 
                 
@@ -153,7 +148,7 @@
                         <input type="text" 
                                name="search_pesanan" 
                                value="{{ request('search_pesanan') }}" 
-                               placeholder="Cari No. Nota, pelanggan, status bayar, atau komplain..." 
+                               placeholder="Cari No. Nota, pembeli, status bayar, atau komplain..." 
                                class="w-full pl-9 pr-4 py-2.5 bg-white border border-border-muted rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
                     </div>
 
@@ -182,7 +177,7 @@
                     </select>
 
                     <select name="filter_pelanggan" class="w-full bg-white border border-border-muted rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
-                        <option value="">Semua Pelanggan</option>
+                        <option value="">Semua Pembeli</option>
                         @foreach($pelanggans ?? [] as $plg)
                             <option value="{{ $plg->id_pelanggan }}" {{ request('filter_pelanggan') == $plg->id_pelanggan ? 'selected' : '' }}>
                                 {{ $plg->nama_pelanggan }}
@@ -233,6 +228,9 @@
                                 <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border {{ $p->status_bayar == 'Lunas' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700' }}">
                                     {{ $p->status_bayar }}
                                 </span>
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 text-gray-600">
+                                    {{ $p->metode_bayar }}
+                                </span>
                                 @if(!empty($p->catatan))
                                     <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border bg-rose-50 border-rose-200 text-rose-700">
                                         Ada Komplain / Catatan
@@ -256,14 +254,14 @@
                         </div>
                     </div>
 
-                    <!-- MODAL DETAIL Pemesanan -->
+                    <!-- MODAL DETAIL PAYMENT -->
                     <div x-show="showDetail" x-cloak class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex justify-center items-center p-4" style="display: none;">
                         <div @click.away="showDetail = false" class="bg-white rounded-2xl w-full max-w-md shadow-xl flex flex-col max-h-[90vh] border border-border-muted overflow-hidden">
                             <div class="p-4 border-b border-border-muted flex justify-between items-center bg-gray-50">
                                 <div class="flex items-center gap-2">
                                     <x-lucide-file-text class="w-4 h-4 text-[#842529]" />
                                     <div>
-                                        <h3 class="font-bold text-gray-800 text-sm">Detail Pemesanan</h3>
+                                        <h3 class="font-bold text-gray-800 text-sm">Detail Payment</h3>
                                         <p class="text-[10px] text-gray-500 font-mono">{{ $p->id_pesanan }}</p>
                                     </div>
                                 </div>
@@ -275,14 +273,14 @@
                             <div class="p-4 overflow-y-auto text-xs space-y-4">
                                 <div class="grid grid-cols-2 gap-3 text-xs bg-gray-50 p-3 rounded-xl border border-border-muted">
                                     <div>
-                                        <span class="text-gray-500 block text-[11px]">Pelanggan</span>
+                                        <span class="text-gray-500 block text-[11px]">Pembeli</span>
                                         <span class="font-bold text-gray-800">{{ $p->pelanggan->nama_pelanggan ?? '-' }}</span>
                                         @if(!empty($p->pelanggan->no_telp))
                                             <span class="text-[11px] text-gray-500 block">{{ $p->pelanggan->no_telp }}</span>
                                         @endif
                                     </div>
                                     <div>
-                                        <span class="text-gray-500 block text-[11px]">Tanggal Order / Antar</span>
+                                        <span class="text-gray-500 block text-[11px]">Tanggal Pesan / Antar</span>
                                         <span class="font-bold text-gray-800">{{ $p->tgl_order }} / {{ $p->tgl_antar }}</span>
                                     </div>
                                     <div>
@@ -322,7 +320,7 @@
                                         <x-lucide-message-square-warning class="w-3.5 h-3.5 text-amber-700" />
                                         <span>Komplain / Catatan Pemesanan:</span>
                                     </label>
-                                    <textarea name="catatan" rows="2" placeholder="Catat komplain pelanggan atau catatan khusus pemesanan ini..."
+                                    <textarea name="catatan" rows="2" placeholder="Catat komplain pembeli atau catatan khusus pemesanan ini..."
                                               class="w-full bg-white border border-amber-200 rounded-lg p-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#842529]">{{ $p->catatan }}</textarea>
                                     <div class="flex justify-end">
                                         <button type="submit" class="bg-amber-700 hover:bg-amber-800 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors">
@@ -362,7 +360,7 @@
                                 @elseif($isCancelled)
                                     <div class="w-full inline-flex items-center justify-center gap-1.5 text-xs bg-gray-100 text-gray-500 py-2.5 px-3 rounded-xl font-bold border border-gray-200 cursor-not-allowed">
                                         <x-lucide-ban class="w-4 h-4" />
-                                        <span>PemesananSudah Dibatalkan</span>
+                                        <span>Pemesanan Sudah Dibatalkan</span>
                                     </div>
                                 @endif
                             </div>
@@ -429,7 +427,7 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <select name="filter_piutang_pelanggan" class="w-full bg-gray-50 border border-border-muted rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#842529]">
-                        <option value="">Semua Pelanggan</option>
+                        <option value="">Semua Pembeli</option>
                         @foreach($pelanggans ?? [] as $plg)
                             <option value="{{ $plg->id_pelanggan }}" {{ request('filter_piutang_pelanggan') == $plg->id_pelanggan ? 'selected' : '' }}>
                                 {{ $plg->nama_pelanggan }}
@@ -502,7 +500,6 @@
                         }
                     }" class="bg-white border border-border-muted rounded-2xl p-4 text-xs shadow-sm space-y-3">
                         
-                        <!-- Baris Atas: ID Order, Status & Jatuh Tempo -->
                         <div class="flex flex-wrap items-center justify-between gap-2">
                             <div class="flex flex-wrap items-center gap-2">
                                 <span class="px-2.5 py-1 rounded-lg bg-[#FAE2E2] text-[#842529] font-bold font-mono">
@@ -526,13 +523,11 @@
                             @endif
                         </div>
 
-                        <!-- Nama Pelanggan -->
                         <div class="flex items-center gap-1.5 text-gray-800 font-bold text-sm">
                             <x-lucide-user class="w-4 h-4 text-gray-400" />
-                            <span>{{ $pi->pesanan->pelanggan->nama_pelanggan ?? 'Pelanggan Umum' }}</span>
+                            <span>{{ $pi->pesanan->pelanggan->nama_pelanggan ?? 'Pembeli Umum' }}</span>
                         </div>
 
-                        <!-- Box Nominal & Tombol Bayar -->
                         <div class="bg-gray-50 border border-border-muted rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div class="space-y-1">
                                 <p class="text-gray-500">
@@ -562,7 +557,6 @@
                             @endif
                         </div>
 
-                        <!-- MODAL PEMBAYARAN TAGIHAN -->
                         @if(!$isLunas)
                             <div x-show="openBayar" x-cloak style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                                 <div @click.away="openBayar = false" class="bg-white rounded-2xl shadow-xl w-full max-w-md border border-border-muted overflow-hidden text-left">
@@ -591,7 +585,7 @@
 
                                         <div class="bg-gray-50 border border-border-muted rounded-xl p-3 space-y-1 text-xs">
                                             <div class="flex justify-between">
-                                                <span class="text-gray-500">Pelanggan / Order:</span>
+                                                <span class="text-gray-500">Pembeli / Order:</span>
                                                 <strong class="text-gray-800">{{ $pi->pesanan->pelanggan->nama_pelanggan ?? 'Umum' }} ({{ $pi->id_pesanan }})</strong>
                                             </div>
                                             <div class="flex justify-between">
@@ -673,7 +667,6 @@
             
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 
-                <!-- Form Filter Pengeluaran -->
                 <form action="{{ route('keuangan.index') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto flex-1">
                     <input type="hidden" name="tab" value="pengeluaran">
                     
@@ -892,7 +885,7 @@
                 <x-lucide-settings class="w-4 h-4 text-[#842529]" />
                 <span>Pengaturan Notifikasi Telegram</span>
             </h3>
-            <p class="text-[11px] text-gray-500 mb-4 border-b border-border-muted pb-3">Atur bot Telegram dan jadwal pengingat tagihan pelanggan.</p>
+            <p class="text-[11px] text-gray-500 mb-4 border-b border-border-muted pb-3">Atur bot Telegram dan jadwal pengingat tagihan pembeli.</p>
             
             <form action="{{ url('/pengaturan/notifikasi') }}" method="POST" class="space-y-3 text-xs">
                 @csrf

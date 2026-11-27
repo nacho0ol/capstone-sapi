@@ -69,7 +69,7 @@
                 <!-- Menu Navigasi Sidebar -->
                 @php
                     $isPengeluaranActive = (request()->routeIs('keuangan.*') && request('tab') === 'pengeluaran') || request()->routeIs('pengeluaran.*');
-                    $isKeuanganActive = (request()->routeIs('keuangan.*') && request('tab') !== 'pengeluaran') || request()->routeIs('piutang.*');
+                    $isPembayaranActive = (request()->routeIs('keuangan.*') && request('tab') !== 'pengeluaran') || request()->routeIs('piutang.*');
                 @endphp
 
                 <nav class="space-y-1.5 text-xs font-semibold">
@@ -79,32 +79,38 @@
                         <span>Beranda</span>
                     </a>
 
-                    <a href="{{ route('transaksi.index') }}" @click="mobileSidebar = false"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('transaksi.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
-                        <x-lucide-shopping-bag class="w-4 h-4" />
-                        <span>Pemesanan</span>
-                    </a>
-
-                    <a href="{{ route('pemasokan.index') }}" @click="mobileSidebar = false"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('pemasokan.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
-                        <x-lucide-truck class="w-4 h-4" />
-                        <span>Pemasokan Daging</span>
-                    </a>
-
                     <a href="{{ route('produk.index') }}" @click="mobileSidebar = false"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('produk.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
                         <x-lucide-beef class="w-4 h-4" />
                         <span>Produk</span>
                     </a>
 
+                    <a href="{{ route('transaksi.index') }}" @click="mobileSidebar = false"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('transaksi.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
+                        <x-lucide-shopping-bag class="w-4 h-4" />
+                        <span>Pemesanan</span>
+                    </a>
+
                     <a href="{{ route('pelanggan.index') }}" @click="mobileSidebar = false"
                        class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('pelanggan.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
                         <x-lucide-users class="w-4 h-4" />
-                        <span>Pelanggan</span>
+                        <span>Pembeli</span>
+                    </a>
+
+                    <a href="{{ route('pemasokan.index') }}" @click="mobileSidebar = false"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('pemasokan.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
+                        <x-lucide-truck class="w-4 h-4" />
+                        <span>Pengadaan Produk</span>
+                    </a>
+
+                    <a href="{{ route('stok.index') }}" @click="mobileSidebar = false"
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('stok.*') ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
+                        <x-lucide-package class="w-4 h-4" />
+                        <span>Stok Barang</span>
                     </a>
 
                     <a href="{{ route('keuangan.index') }}" @click="mobileSidebar = false"
-                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ $isKeuanganActive ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
+                       class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ $isPembayaranActive ? 'bg-[#842529] text-white shadow-sm font-bold' : 'text-gray-600 hover:bg-[#FAE2E2]/60 hover:text-[#842529]' }}">
                         <x-lucide-receipt class="w-4 h-4" />
                         <span>Keuangan</span>
                     </a>
@@ -215,7 +221,13 @@
             <a href="{{ route('pemasokan.index') }}" 
                class="flex items-center gap-2.5 bg-purple-50 text-purple-800 hover:bg-purple-100 text-xs font-semibold p-2.5 rounded-xl transition-all border border-purple-100">
                 <x-lucide-truck class="w-4 h-4 text-purple-700" />
-                <span>Catat Pemasokan Daging</span>
+                <span>Catat Pengadaan Produk</span>
+            </a>
+
+            <a href="{{ route('stok.index') }}" 
+               class="flex items-center gap-2.5 bg-indigo-50 text-indigo-800 hover:bg-indigo-100 text-xs font-semibold p-2.5 rounded-xl transition-all border border-indigo-100">
+                <x-lucide-package class="w-4 h-4 text-indigo-700" />
+                <span>Catat Stok Barang</span>
             </a>
 
             <a href="{{ route('keuangan.index', ['tab' => 'pengeluaran']) }}" 
@@ -239,7 +251,7 @@
             <a href="{{ route('pelanggan.index') }}" 
                class="flex items-center gap-2.5 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-semibold p-2.5 rounded-xl transition-all border border-emerald-100">
                 <x-lucide-user-plus class="w-4 h-4 text-emerald-700" />
-                <span>Tambah Pelanggan Baru</span>
+                <span>Tambah Pembeli Baru</span>
             </a>
         </div>
 

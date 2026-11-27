@@ -14,12 +14,22 @@ class Produk extends Model
 
     protected $fillable = [
         'nama_produk',
+        'foto',
         'kategori',
         'harga_awal',
         'harga_jual',
+        'id_jagal',
         'nama_jagal',
         'is_deleted'
     ];
 
-    public function jagal() { return $this->belongsTo(Jagal::class, 'id_jagal', 'id_jagal'); }
+    public function jagal()
+    {
+        return $this->belongsTo(Jagal::class, 'id_jagal', 'id_jagal');
+    }
+
+    public function pesananDetail()
+    {
+        return $this->hasMany(PesananDetail::class, 'id_produk', 'id_produk');
+    }
 }

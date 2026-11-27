@@ -5,11 +5,11 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-            <h1 class="text-xl font-bold text-gray-900">Pemasokan Daging</h1>
-            <p class="text-xs text-gray-500 mt-0.5">Pencatatan stok masuk daging dari mitra jagal / RPH</p>
+            <h1 class="text-xl font-bold text-gray-900">Pengadaan Produk</h1>
+            <p class="text-xs text-gray-500 mt-0.5">Pencatatan pengadaan stok masuk produk dari mitra jagal / RPH</p>
         </div>
 
-        <!-- Tombol & Modal Catat Pemasokan -->
+        <!-- Tombol & Modal Catat Pengadaan -->
         <div x-data="{
             openAdd: {{ $errors->any() ? 'true' : 'false' }},
             produkList: {{ Js::from($produks->map(fn($p) => [
@@ -55,16 +55,16 @@
             <button @click="openAdd = true" 
                     class="w-full sm:w-auto inline-flex justify-center items-center gap-2 bg-[#842529] hover:bg-red-900 text-white text-xs py-2.5 px-4 rounded-xl font-bold shadow-sm transition-all active:scale-95">
                 <x-lucide-plus-circle class="w-4 h-4" />
-                <span>Catat Pemasokan Daging</span>
+                <span>Catat Pengadaan Produk</span>
             </button>
 
-            <!-- MODAL TAMBAH PEMASOKAN -->
+            <!-- MODAL TAMBAH PENGADAAN -->
             <div x-show="openAdd" x-cloak style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                 <div @click.away="openAdd = false" class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-border-muted">
                     <div class="flex justify-between items-center border-b border-border-muted p-4">
                         <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
                             <x-lucide-truck class="w-4 h-4 text-[#842529]" />
-                            <span>Catat Pemasokan Daging</span>
+                            <span>Catat Pengadaan Produk</span>
                         </h3>
                         <button @click="openAdd = false" type="button" class="text-gray-400 hover:text-[#842529] p-1 rounded-lg">
                             <x-lucide-x class="w-5 h-5" />
@@ -85,13 +85,13 @@
                         @endif
 
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Pemasokan</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Pengadaan</label>
                             <input type="date" name="tgl_pemasokan" value="{{ old('tgl_pemasokan', date('Y-m-d')) }}" required 
                                    class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529]">
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-1">Produk Daging</label>
+                            <label class="block text-xs font-semibold text-gray-700 mb-1">Produk</label>
                             <select name="id_produk" x-model="selectedProduk" @change="onProdukChange()" required 
                                     class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529]">
                                 <option value="">-- Pilih Produk --</option>
@@ -136,13 +136,13 @@
 
                         <div>
                             <label class="block text-xs font-semibold text-gray-700 mb-1">Catatan (Opsional)</label>
-                            <textarea name="catatan" rows="2" placeholder="Keterangan kualitas daging, waktu potong, dll..." 
+                            <textarea name="catatan" rows="2" placeholder="Keterangan kualitas produk, waktu potong, dll..." 
                                       class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529]">{{ old('catatan') }}</textarea>
                         </div>
 
                         <button type="submit" class="w-full bg-[#842529] hover:bg-red-900 text-white text-xs py-2.5 rounded-xl font-bold shadow-md flex items-center justify-center gap-2">
                             <x-lucide-save class="w-4 h-4" />
-                            <span>Simpan Pemasokan</span>
+                            <span>Simpan Pengadaan</span>
                         </button>
                     </form>
                 </div>
@@ -150,10 +150,10 @@
         </div>
     </div>
 
-    <!-- Ringkasan Pemasokan (1 Kartu Total Nilai Pemasokan) -->
+    <!-- Ringkasan Pengadaan (1 Kartu Total Nilai Pengadaan) -->
     <div class="bg-white border border-border-muted rounded-2xl p-4 shadow-sm flex items-center justify-between">
         <div>
-            <p class="text-xs font-medium text-gray-500 mb-1">Total Nilai Pemasokan</p>
+            <p class="text-xs font-medium text-gray-500 mb-1">Total Nilai Pengadaan</p>
             <p class="text-xl font-extrabold text-[#842529]">Rp {{ number_format($totalNominal, 0, ',', '.') }}</p>
         </div>
         <div class="w-11 h-11 bg-[#FAE2E2] rounded-xl flex items-center justify-center text-[#842529] shrink-0">
@@ -161,7 +161,7 @@
         </div>
     </div>
 
-    <!-- Form Filter Pemasokan (Compact 2 Baris) -->
+    <!-- Form Filter Pengadaan (Compact 2 Baris) -->
     <form action="{{ route('pemasokan.index') }}" method="GET" class="bg-white border border-border-muted p-3 rounded-2xl shadow-sm space-y-2">
         <!-- Baris 1: Pencarian + Tombol Filter & Reset -->
         <div class="flex items-center gap-2">
@@ -210,7 +210,7 @@
         </div>
     </form>
 
-    <!-- Daftar Pemasokan -->
+    <!-- Daftar Pengadaan -->
     <div class="space-y-3">
         @forelse($pemasokan as $pm)
             <div x-data="{
@@ -259,8 +259,8 @@
                     <button type="button" 
                             @click="$dispatch('confirm-action', { 
                                 action: '{{ route('pemasokan.destroy', $pm->id_pemasokan) }}', 
-                                title: 'Hapus Pemasokan', 
-                                message: 'Yakin ingin menghapus catatan pemasokan ini?', 
+                                title: 'Hapus Pengadaan', 
+                                message: 'Yakin ingin menghapus catatan pengadaan ini?', 
                                 method: 'DELETE',
                                 confirmText: 'Ya, Hapus',
                                 confirmClass: 'bg-rose-600 hover:bg-rose-700'
@@ -271,11 +271,11 @@
                     </button>
                 </div>
 
-                <!-- MODAL EDIT PEMASOKAN -->
+                <!-- MODAL EDIT PENGADAAN -->
                 <div x-show="openEdit" x-cloak style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div @click.away="openEdit = false" class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-border-muted text-left">
                         <div class="flex justify-between items-center border-b border-border-muted p-4">
-                            <h3 class="text-sm font-bold text-gray-800">Edit Pemasokan Daging</h3>
+                            <h3 class="text-sm font-bold text-gray-800">Edit Pengadaan Produk</h3>
                             <button @click="openEdit = false" type="button" class="text-gray-400 hover:text-[#842529] p-1">
                                 <x-lucide-x class="w-5 h-5" />
                             </button>
@@ -286,13 +286,13 @@
                             @method('PUT')
 
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Pemasokan</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Pengadaan</label>
                                 <input type="date" name="tgl_pemasokan" value="{{ $pm->tgl_pemasokan }}" required 
                                        class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl">
                             </div>
 
                             <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Produk Daging</label>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">Produk</label>
                                 <select name="id_produk" required class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl">
                                     @foreach($produks as $pr)
                                         <option value="{{ $pr->id_produk }}" {{ $pm->id_produk == $pr->id_produk ? 'selected' : '' }}>
@@ -343,7 +343,7 @@
         @empty
             <div class="text-center bg-white rounded-2xl border border-border-muted py-12 shadow-sm">
                 <x-lucide-truck class="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                <p class="text-gray-400 text-xs">Belum ada catatan pemasokan daging.</p>
+                <p class="text-gray-400 text-xs">Belum ada catatan pengadaan produk.</p>
             </div>
         @endforelse
     </div>

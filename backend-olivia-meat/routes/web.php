@@ -11,6 +11,7 @@ use App\Http\Controllers\PelangganController;
 use App\Http\Controllers\PemasokanDagingController;
 use App\Http\Controllers\KeuanganController;
 use App\Http\Controllers\ProfilController;
+use App\Http\Controllers\StokBarangController;
 
 // Rute Autentikasi Pengguna
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -28,7 +29,7 @@ Route::middleware('auth')->group(function () {
     // 1. Beranda
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    // 2. Orderan (Transaksi Orderan)
+    // 2. Pemesanan
     Route::get('/transaksi', [PesananController::class, 'index'])->name('transaksi.index');
     Route::post('/transaksi/store', [PesananController::class, 'store'])->name('transaksi.store');
     Route::get('/transaksi/{id}/edit', [PesananController::class, 'edit'])->name('transaksi.edit');
@@ -36,7 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/transaksi/cancel/{id}', [PesananController::class, 'cancel'])->name('transaksi.cancel');
     Route::put('/transaksi/{id}/komplain', [PesananController::class, 'updateKomplain'])->name('transaksi.komplain');
 
-    // 3. Pemasokan Daging
+    // 3. Pengadaan Produk (Pemasokan Daging)
     Route::get('/pemasokan-daging', [PemasokanDagingController::class, 'index'])->name('pemasokan.index');
     Route::post('/pemasokan-daging', [PemasokanDagingController::class, 'store'])->name('pemasokan.store');
     Route::put('/pemasokan-daging/{id}', [PemasokanDagingController::class, 'update'])->name('pemasokan.update');
@@ -52,14 +53,14 @@ Route::middleware('auth')->group(function () {
     Route::put('/jagal/{id}', [ProdukController::class, 'updateJagal'])->name('jagal.update');
     Route::delete('/jagal/{id}', [ProdukController::class, 'destroyJagal'])->name('jagal.destroy');
 
-    // 5. Pelanggan (+ History Pesanan, Pembayaran & Komplain)
+    // 5. Pembeli (Pelanggan)
     Route::get('/pelanggan', [PelangganController::class, 'index'])->name('pelanggan.index');
     Route::get('/pelanggan/{id}', [PelangganController::class, 'show'])->name('pelanggan.show');
     Route::post('/pelanggan', [PelangganController::class, 'store'])->name('pelanggan.store');
     Route::put('/pelanggan/{id}', [PelangganController::class, 'update'])->name('pelanggan.update');
     Route::delete('/pelanggan/{id}', [PelangganController::class, 'destroy'])->name('pelanggan.destroy');
 
-    // 6. Keuangan, Tagihan (Piutang) & Pengeluaran
+    // 6. Pembayaran, Tagihan & Pengeluaran
     Route::get('/keuangan', [KeuanganController::class, 'index'])->name('keuangan.index');
     Route::post('/pengaturan/notifikasi', [KeuanganController::class, 'updateNotifikasi'])->name('pengaturan.notifikasi');
     Route::post('/pengaturan/notifikasi/test', [KeuanganController::class, 'testNotifikasi'])->name('pengaturan.notifikasi.test');
@@ -77,4 +78,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/profil', [ProfilController::class, 'index'])->name('profil.index');
     Route::put('/profil/update', [ProfilController::class, 'update'])->name('profil.update');
     Route::put('/profil/password', [ProfilController::class, 'updatePassword'])->name('profil.password.update');
+
+    // 8. Stok Barang
+    Route::get('/stok-barang', [StokBarangController::class, 'index'])->name('stok.index');
+    Route::post('/stok-barang', [StokBarangController::class, 'store'])->name('stok.store');
+    Route::put('/stok-barang/{id}', [StokBarangController::class, 'update'])->name('stok.update');
+    Route::patch('/stok-barang/{id}/keluar', [StokBarangController::class, 'tandaiKeluar'])->name('stok.keluar');
+    Route::delete('/stok-barang/{id}', [StokBarangController::class, 'destroy'])->name('stok.destroy');
 });

@@ -5,10 +5,22 @@
     $defaultItems = $pesanan->detail->map(function($d) {
         return ['id_produk' => (string) $d->id_produk, 'qty' => (float) $d->qty];
     })->values()->all();
+
+    $curMetode = old('metode_bayar', $pesanan->metode_bayar);
+    $initKategori = in_array($curMetode, ['Cash Tunai', 'Cash Transfer', 'Tunai', 'Transfer'])
+        ? 'Cash'
+        : ($curMetode === 'Tempo' ? 'Tempo' : 'Pending');
+    $initCashSub = in_array($curMetode, ['Cash Transfer', 'Transfer']) ? 'Cash Transfer' : 'Cash Tunai';
 @endphp
 <div x-data="{ 
     selectedPelanggan: '{{ old('id_pelanggan', $pesanan->id_pelanggan) }}',
-    metodeBayar: '{{ old('metode_bayar', $pesanan->metode_bayar) }}',
+    kategoriBayar: '{{ $initKategori }}',
+    cashSub: '{{ $initCashSub }}',
+    get metodeBayarFinal() {
+        if (this.kategoriBayar === 'Cash') return this.cashSub;
+        if (this.kategoriBayar === 'Tempo') return 'Tempo';
+        return 'Pending';
+    },
     items: {{ Js::from(old('items', $defaultItems)) }}, 
     produks: {{ Js::from($produks) }},
     pelanggans: {{ Js::from($pelanggans) }},
@@ -22,12 +34,12 @@
     <div class="flex justify-between items-center">
         <div>
             <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
-                <span>Edit Orderan</span>
+                <span>Edit Pemesanan</span>
                 <span class="text-xs bg-[#FAE2E2] text-[#842529] px-2.5 py-0.5 rounded-md font-extrabold border border-[#842529]/10">
                     #{{ $pesanan->id_pesanan }}
                 </span>
             </h1>
-            <p class="text-xs text-gray-500 mt-0.5">Ubah detail orderan, jadwal antar, dan daftar item orderan</p>
+            <p class="text-xs text-gray-500 mt-0.5">Ubah detail pemesanan, jadwal antar, metode bayar, dan daftar item</p>
         </div>
         <a href="{{ route('transaksi.index') }}" 
            class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-xl transition-all">
@@ -36,13 +48,13 @@
         </a>
     </div>
 
-    <!-- Form Edit Orderan -->
+    <!-- Form Edit Pemesanan -->
     <div class="bg-white rounded-2xl p-5 shadow-sm border border-border-muted">
         @if ($errors->any())
             <div class="bg-red-50 border border-red-200 text-red-600 px-3.5 py-2.5 rounded-xl text-xs mb-4 space-y-1">
                 <div class="font-bold flex items-center gap-1.5">
                     <x-lucide-alert-circle class="w-4 h-4 text-red-600 flex-shrink-0" />
-                    <span>Gagal Memperbarui Orderan:</span>
+                    <span>Gagal Memperbarui Pemesanan:</span>
                 </div>
                 <ul class="list-disc pl-5 space-y-0.5">
                     @foreach ($errors->all() as $error)
@@ -55,33 +67,28 @@
         <form action="{{ route('transaksi.update', $pesanan->id_pesanan) }}" method="POST" class="space-y-4">
             @csrf
             @method('PUT')
+            <input type="hidden" name="metode_bayar" :value="metodeBayarFinal">
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Order</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Pemesanan</label>
                     <input type="date" name="tgl_order" min="2015-01-01" value="{{ old('tgl_order', $pesanan->tgl_order) }}" 
                            class="w-full text-xs bg-gray-50 border {{ $errors->has('tgl_order') ? 'border-red-500' : 'border-border-muted' }} p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
-                    @error('tgl_order')
-                        <p class="text-[10px] text-red-600 mt-1 font-medium">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Antar</label>
                     <input type="date" name="tgl_antar" min="2015-01-01" value="{{ old('tgl_antar', $pesanan->tgl_antar) }}" 
                            class="w-full text-xs bg-gray-50 border {{ $errors->has('tgl_antar') ? 'border-red-500' : 'border-border-muted' }} p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
-                    @error('tgl_antar')
-                        <p class="text-[10px] text-red-600 mt-1 font-medium">{{ $message }}</p>
-                    @enderror
                 </div>
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Pelanggan</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Pembeli</label>
                     <select name="id_pelanggan" x-model="selectedPelanggan"
                             class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
-                        <option value="">-- Pilih Pelanggan --</option>
+                        <option value="">-- Pilih Pembeli --</option>
                         @foreach($pelanggans as $plg)
                             <option value="{{ $plg->id_pelanggan }}" {{ old('id_pelanggan', $pesanan->id_pelanggan) == $plg->id_pelanggan ? 'selected' : '' }}>
                                 {{ $plg->nama_pelanggan }} - {{ $plg->no_telp }}
@@ -91,24 +98,38 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor Telepon Pelanggan</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Nomor Telepon Pembeli</label>
                     <input type="text" :value="currentNoTelp" readonly
                            class="w-full text-xs bg-gray-100 border border-border-muted p-2.5 rounded-xl text-gray-700 font-medium cursor-not-allowed">
                 </div>
             </div>
 
-            <!-- MULAI GANTI DARI SINI (BARIS 102) -->
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Metode Bayar</label>
-                <select name="metode_bayar" x-model="metodeBayar"
-                        class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white" required>
-                    <option value="Tunai" {{ old('metode_bayar', $pesanan->metode_bayar) == 'Tunai' ? 'selected' : '' }}>Tunai</option>
-                    <option value="Transfer" {{ old('metode_bayar', $pesanan->metode_bayar) == 'Transfer' ? 'selected' : '' }}>Transfer</option>
-                    <option value="Tempo" {{ old('metode_bayar', $pesanan->metode_bayar) == 'Tempo' ? 'selected' : '' }}>Tempo (Tagihan)</option>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Metode Pembayaran</label>
+                <select x-model="kategoriBayar"
+                        class="w-full text-xs bg-gray-50 border border-border-muted p-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#842529] focus:bg-white">
+                    <option value="Pending">Pending (Belum Bayar - Default Cash)</option>
+                    <option value="Cash">Cash (Langsung Lunas)</option>
+                    <option value="Tempo">Tempo (Tagihan)</option>
                 </select>
 
+                <!-- Sub-Pilihan Cash: Tunai / Transfer -->
+                <div x-show="kategoriBayar === 'Cash'" x-cloak class="mt-2.5 bg-emerald-50 border border-emerald-200 p-3 rounded-xl space-y-2" x-transition>
+                    <label class="block text-[11px] font-bold text-emerald-900 uppercase tracking-wider">Pilih Jenis Pembayaran Cash</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2 bg-white border border-emerald-200 p-2.5 rounded-xl cursor-pointer text-xs font-semibold">
+                            <input type="radio" x-model="cashSub" value="Cash Tunai" class="accent-[#842529]">
+                            <span>Cash Tunai</span>
+                        </label>
+                        <label class="flex items-center gap-2 bg-white border border-emerald-200 p-2.5 rounded-xl cursor-pointer text-xs font-semibold">
+                            <input type="radio" x-model="cashSub" value="Cash Transfer" class="accent-[#842529]">
+                            <span>Cash Transfer</span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Box Input Tempo & Tagihan -->
-                <div x-show="metodeBayar === 'Tempo'" x-cloak class="mt-2.5 bg-sky-50 border border-sky-200 p-3 rounded-xl space-y-2" x-transition>
+                <div x-show="kategoriBayar === 'Tempo'" x-cloak class="mt-2.5 bg-sky-50 border border-sky-200 p-3 rounded-xl space-y-2" x-transition>
                     <h4 class="text-[11px] font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1">
                         <x-lucide-receipt class="w-3.5 h-3.5 text-sky-700" />
                         <span>Data Tagihan & Jatuh Tempo</span>
@@ -154,7 +175,6 @@
                     </div>
                 @endif
             </div>
-            <!-- SAMPAI SINI -->
 
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Catatan (Opsional)</label>
@@ -168,7 +188,7 @@
                 <div class="flex justify-between items-center">
                     <label class="block text-xs font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
                         <x-lucide-package class="w-4 h-4 text-[#842529]" />
-                        <span>Item Produk Orderan</span>
+                        <span>Item Produk Pemesanan</span>
                     </label>
                 </div>
                 
